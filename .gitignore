@@ -1,0 +1,31 @@
+# # Ignore compiled files
+*.txt
+*.jpg
+*.png
+*.yaml
+*.json
+*.txt
+ 
+ 
+# # Ignore Python bytecode cache files
+*/__pycache__/*
+.vscode/
+*.pyc
+*.pt
+*.pth
+*.tar
+*.onnx
+*.trt
+*.zip
+
+
+data
+inference_results
+ 
+# # Except the important_folder and its contents
+# !/ultralytics_folder/od_seg_pos.ipynb
+# !/pose_pnp/st_with_cmtx_env.json
+# !/ultralytics_folder/runs/pose/train5/weights/best.pt
+# !/processed_data/data_splitted_keypoints/test/images/image_0901.jpg
+# !/processed_data/data_splitted_keypoints/test/images/image_0902.jpg
+# !/processed_data/data_splitted_keypoints/test/images/image_0903.jpg
