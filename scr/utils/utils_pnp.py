@@ -133,7 +133,7 @@ def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoi
     Returns:
         points2D: (2,N) numpy.ndarray - projected points (pix)
     '''
-    # Size check (3,N)
+  
     if keypoints.shape[0] != 3:
         keypoints = np.transpose(keypoints)
 
@@ -160,28 +160,17 @@ def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoi
 
 # PnP with the metrics across all dataset
 def pnp_with_metrics(): 
-
-    # Load the math model of the satellite and camera matrix
     with open("st_with_cmtx.json", 'r') as json_file:
         data = json.load(json_file)
         sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix'])
         dist = np.array(data['dist']).astype(np.float32)
 
-    # Load json data
     with open('../not_processed_data/train/meta_keypoints.json', 'r') as f:
         annotations = json.load(f)
     
-
-    # Define path for the image folder with Path 
     image_folder_path = Path("../not_processed_data/train/images")
-
-    # Put all images in the python list
     image_path_list = [image for image in sorted(image_folder_path.rglob('*.jpg'))]
-
     num_images = len(image_path_list)
-
-    
-
     keypoints_speed_list = []
     t_error_sum, r_error_sum, speed_score_sum  = 0, 0, 0
    
