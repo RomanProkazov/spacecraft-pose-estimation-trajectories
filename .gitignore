@@ -24,7 +24,6 @@ data
 data_splitted 
 runs
 videos
-scr/ultralytics/yolo_data
  
 # # Except the important_folder and its contents
 # !/ultralytics_folder/od_seg_pos.ipynb
