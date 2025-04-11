@@ -7,11 +7,11 @@ from utils_pnp import *
 import matplotlib.pyplot as plt
 
 
-def add_kpts_to_json(image_folder_path="../../data/images/trajectories_images",
-                     json_data_path="../../data/labels/meta_keypoints.json",
-                     camera_sat_json="../../data/labels/cam_sat.json",
-                     output_json="../../data/labels/labels_5kimgs.json",
-                     res=(512, 512)):
+def add_kpts_to_json(image_folder_path="../../data_platform/images",
+                     json_data_path="../../data_platform/labels/meta_keypoints_plat.json",
+                     camera_sat_json="../../data_platform/labels/cam_plat.json",
+                     output_json="../../data_platform/labels/labels_plat_5kimgs.json",
+                     res=(1280, 800)):
 
     image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.png')])
     with open(json_data_path, 'r') as f:

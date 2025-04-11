@@ -23,12 +23,12 @@ def create_video_from_images(image_folder, output_video, fps=30, start_idx=0, en
     print(f"Video saved to {output_video}")
 
 # Example usage:
-image_folder = "../../data/images/trajectories_images"  
+image_folder = "../../data_platform/images"  
 total_images = len([img for img in os.listdir(image_folder) if img.endswith(".png") or img.endswith(".jpg")])
 frames_per_video = 500
 
 for i in range(0, total_images, frames_per_video):
     start_idx = i
     end_idx = min(i + frames_per_video, total_images)
-    output_video = f"../../data/images/trajectories_videos/trajectory_{i // frames_per_video + 1}.mp4"
+    output_video = f"../../videos/videos_platform/trajectories/trajectory_{i // frames_per_video + 1}.mp4"
     create_video_from_images(image_folder, output_video, fps=30, start_idx=start_idx, end_idx=end_idx)
