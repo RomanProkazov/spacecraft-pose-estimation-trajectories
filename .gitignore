@@ -5,8 +5,8 @@
 *.yaml
 *.json
 *.txt
-.mp4
- 
+*.mp4
+*.jpeg 
  
 # # Ignore Python bytecode cache files
 */__pycache__/*
