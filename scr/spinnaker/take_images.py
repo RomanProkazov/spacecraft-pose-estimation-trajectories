@@ -134,14 +134,16 @@ def main():
     finally:
         # Cleanup
         try:
-            cam.EndAcquisition()
-            cam.DeInit()
-        except:
-            pass
-        cam_list.Clear()
-        system.ReleaseInstance()
-        cv2.destroyAllWindows()
-        print("Streaming stopped.")
-
+            if 'cam' in locals() and cam.IsInitialized():
+                cam.EndAcquisition()
+                cam.DeInit()
+            cam = None  # Explicitly delete the camera reference
+        except Exception as ex:
+            print(f"Error during camera cleanup: {ex}")
+        finally:
+            cam_list.Clear()
+            system.ReleaseInstance()
+            cv2.destroyAllWindows()
+            print("Streaming stopped.")
 if __name__ == "__main__":
     main()

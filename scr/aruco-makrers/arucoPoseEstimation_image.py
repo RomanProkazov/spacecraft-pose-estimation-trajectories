@@ -1,78 +1,77 @@
 import cv2
 import numpy as np
 from cv2 import aruco
+import json
 
-
-def load_camera_parameters(camera_matrix_path, distortion_coefficients_path):
-    camera_matrix = np.load(camera_matrix_path)
-    distortion_coefficients = np.load(distortion_coefficients_path)
-    return camera_matrix, distortion_coefficients
-
+def load_camera_parameters(camera_matrix_path):
+    """Load camera calibration data from JSON file"""
+    with open(camera_matrix_path, 'r') as f:
+        cam_dist = json.load(f)
+    camera_matrix = np.array(cam_dist['camera_matrix'])
+    distortion_coeffs = np.array(cam_dist['distortion_coefficients'])
+    return camera_matrix, distortion_coeffs
 
 def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_length):
-    """
-    Estimate the pose of an ArUco marker in an image.
-
-    Args:
-        image_path (str): Path to the input image.
-        camera_matrix (numpy.ndarray): Camera matrix.
-        distortion_coefficients (numpy.ndarray): Distortion coefficients.
-        marker_length (float): Length of the marker's side in meters.
-
-    Returns:
-        None
-    """
+    """Estimate pose of ArUco markers in an image"""
     
+    # Load image
     image = cv2.imread(image_path)
     if image is None:
         print(f"Error: Unable to load image from {image_path}")
         return
 
+    # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Load the predefined dictionary
+    # Initialize ArUco detector with modern API
     aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
-    parameters = aruco.DetectorParameters_create()
+    detector_params = aruco.DetectorParameters()
+    detector = aruco.ArucoDetector(aruco_dict, detector_params)
 
     # Detect markers
-    corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    corners, ids, _ = detector.detectMarkers(gray)
 
     if ids is not None:
         # Draw detected markers
-        aruco.drawDetectedMarkers(image, corners, ids)
+        image = aruco.drawDetectedMarkers(image, corners, ids)
 
         # Estimate pose for each marker
-        for i, corner in enumerate(corners):
-            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corner, marker_length, camera_matrix, distortion_coefficients)
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+            corners, 
+            marker_length, 
+            camera_matrix, 
+            distortion_coefficients
+        )
 
-            # Draw axis for each marker
-            aruco.drawAxis(image, camera_matrix, distortion_coefficients, rvec, tvec, marker_length * 0.5)
-
-            # Print pose information
+        # Draw axis and display pose for each marker
+        for i in range(len(ids)):
+            image = cv2.drawFrameAxes(
+                image, 
+                camera_matrix, 
+                distortion_coefficients, 
+                rvecs[i], 
+                tvecs[i], 
+                marker_length * 0.5
+            )
+            
             print(f"Marker ID: {ids[i][0]}")
-            print(f"Rotation Vector (rvec):\n{rvec}")
-            print(f"Translation Vector (tvec):\n{tvec}")
-
+            print(f"Rotation Vector (rvec):\n{rvecs[i]}")
+            print(f"Translation Vector (tvec):\n{tvecs[i]}")
+            print("-" * 40)
     else:
         print("No markers detected.")
 
-    # Display the image
+    # Display results
     cv2.imshow("ArUco Pose Estimation", image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
 if __name__ == "__main__":
-    # Paths to input files
-    image_path = "../../data/images/aruco_image.jpg"  # Replace with your image path
-    camera_matrix_path = "../../data/calibration/camera_matrix.npy"  # Replace with your camera matrix file path
-    distortion_coefficients_path = "../../data/calibration/dist_coeffs.npy"  # Replace with your distortion coefficients file path
+    # Configuration
+    image_path = "frame_1745928396935.png"  # Update this path
+    camera_matrix_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_3072px/labels/cam_sat.json"     # Update this path
+    marker_length = 0.064                   # Physical size of marker in meters
 
-    # Marker length in meters
-    marker_length = 0.05  # Replace with the actual marker size
-
-    # Load camera parameters
-    camera_matrix, distortion_coefficients = load_camera_parameters(camera_matrix_path, distortion_coefficients_path)
-
-    # Estimate pose
+    # Run pose estimation
+    camera_matrix, distortion_coefficients = load_camera_parameters(camera_matrix_path)
     estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_length)
