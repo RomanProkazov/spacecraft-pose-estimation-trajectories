@@ -1,9 +1,10 @@
 from pathlib import Path
 import json
+import sys
+sys.path.append("../../scr/krn")
+import config as config
 
-def bbox_txt_from_json_keypoints(path_to_json_file="../../data/labels/labels_5kimgs.json",
-                                          labels_path_bbox="../../data/labels/bbox_yolo",
-                                          res=(512, 512)):
+def bbox_txt_from_json_keypoints(path_to_json_file, labels_path_bbox, res):
 
     labels_path_bbox = Path(labels_path_bbox)
     labels_path_bbox.mkdir(parents=True, exist_ok=True)
@@ -31,5 +32,10 @@ def bbox_txt_from_json_keypoints(path_to_json_file="../../data/labels/labels_5ki
         with open(labels_path_bbox / f"{sample}.txt", 'w') as f:
             f.write(f"0 {bbox_coords[0]:.6f} {bbox_coords[1]:.6f} {bbox_coords[2]:.6f} {bbox_coords[3]:.6f}")
 
-bbox_txt_from_json_keypoints()
-print("Done!")
+
+if __name__ == "__main__":
+    path_to_json_file = config.LABELS_JSON
+    labels_path_bbox = "../../data_3072px/labels/bbox_yolo"
+    res = (3072, 2048)
+    bbox_txt_from_json_keypoints(path_to_json_file, labels_path_bbox, res)
+    print("Done!")

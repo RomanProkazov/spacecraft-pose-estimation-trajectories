@@ -14,11 +14,21 @@ PIN_MEMORY = True
 SAVE_MODEL = True
 LOAD_MODEL = True
 
-NUM_KPTS = 4
-CHECKPOINT_FILE = "../../trained_models/krn-dir/b0_4kpts_100epochs.pth.tar"
-TEST_IMG_DIR = "../../data_splitted/val/images"
-KRN_MODEL_PATH = "../../trained_models/krn-dir/b0_4kpts_100epochs.pth.tar"
-ODN_MODEL_PATH = "../../trained_models/odn-dir/best.pt"
+NUM_KPTS = 16
+NUM_KPTS_INF = 4
+CHECKPOINT_FILE = "../../trained_models/krn-dir/b0_4kpts_3072px_v1.pth.tar"
+KRN_MODEL_PATH = "../../trained_models/krn-dir/b0_4kpts_3072px_v1.pth.tar"
+ODN_MODEL_PATH = "../../trained_models/odn-dir/best_odn_3072px_v1.pt"
+SEG_MODEL_PATH = "../../runs/segment/train5/weights/best.pt"
+
+IMG_DIR = "../../data_3072px/images"
+TEST_IMG_DIR = "../../data_splitted/data_odn/test/images"
+
+SAT_CAM_JSON = "../../data_3072px/labels/cam_sat.json"
+LABELS_JSON = "../../data_3072px/labels/labels_sat_27kimgs.json"
+
+INPUT_VIDEO_PATH = "../../videos/3072_2048/test/trajectories_videos/trajectory_1.mp4"
+OUTPUT_VIDEO_PATH_SEG = "../../videos/3072_2048/test/seg_videos/seg_trajectory1.mp4"
 
 
 
@@ -46,8 +56,8 @@ train_transforms = A.Compose(
         ], p=1.0),
         A.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=0, p=0.2, border_mode=cv2.BORDER_CONSTANT),
         A.Normalize(
-            mean=[0.3820, 0.3820, 0.3820],
-            std=[0.3820, 0.3820, 0.3820],
+            mean=[-0.6018, -0.6015, -0.6016],
+            std=[0.5889, 0.5888, 0.5888],
             max_pixel_value=255.0,
         ),
         
@@ -57,8 +67,8 @@ train_transforms = A.Compose(
 val_transforms = A.Compose(
     [   A.Resize(224, 224),
         A.Normalize(
-            mean=[0.3820, 0.3820, 0.3820],
-            std=[0.3820, 0.3820, 0.3820],
+            mean=[0.5, 0.5, 0.5],
+            std=[0.5, 0.5, 0.5],
             max_pixel_value=255.0,
         ),
         ToTensorV2(),
@@ -66,11 +76,11 @@ val_transforms = A.Compose(
 )
 test_transforms = A.Compose(
     [
-        A.LongestMaxSize(max_size=640),
+        # A.LongestMaxSize(max_size=640),
 
         A.Normalize(
-            mean=[0.3820, 0.3820, 0.3820],
-            std=[0.3318, 0.3318, 0.3318],
+            mean=[0.5, 0.5, 0.5],
+            std=[0.5, 0.5, 0.5],
             max_pixel_value=255.0,
         ),
         ToTensorV2()

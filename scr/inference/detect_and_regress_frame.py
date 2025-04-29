@@ -7,7 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from torchvision import transforms
 from PIL import Image
-import scr.krn.config as config
+import sys
+sys.path.append("../../scr/krn")
+import config 
 import os
 
 
@@ -84,23 +86,23 @@ def visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w):
 
     # Draw keypoints
     for x, y in keypoints:
-        cv2.circle(original_image, (int(x), int(y)), 3, (0, 0, 255), -1)
+        cv2.circle(original_image, (int(x), int(y)), 10, (0, 0, 255), -1)
 
     # Display the image
     plt.imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
     plt.title("Detected Object with Keypoints")
-    plt.savefig("detected_object.png")
+    # plt.savefig("detected_object.png")
     plt.show()
 
 
 
 
 if __name__ == "__main__":
-    idx = 450
+    idx = 1000
     # Load models
     detection_model = YOLO(config.ODN_MODEL_PATH)  # Object detection model
     krn_model = EfficientNet.from_pretrained("efficientnet-b0")
-    krn_model._fc = nn.Linear(1280, config.NUM_KPTS * 2)  # Assuming 16 keypoints
+    krn_model._fc = nn.Linear(1280, config.NUM_KPTS_INF * 2)  # Assuming 16 keypoints
     krn_model.load_state_dict(torch.load(config.KRN_MODEL_PATH, weights_only=True)["state_dict"], strict=False)
     krn_model = krn_model.to(config.DEVICE)
 
@@ -121,7 +123,8 @@ if __name__ == "__main__":
 
         # Keypoint prediction
         keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE, num_kpts=config.NUM_KPTS)
-
+        print("Predicted keypoints:", keypoints)
+        
 
         # Visualize results
         visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w)

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch_dataset_subset import KeypointsSubsetDataset
+from efficientnet_pytorch import EfficientNet
 
 
 def get_mean_std(loader):
@@ -63,9 +64,9 @@ def load_checkpoint(checkpoint, model, optimizer=None, lr=None):
 
 
 if __name__ == "__main__":
-    image_folder = "../../data/images/trajectories_images"
-    labels_path = "../../data/labels/labels_5kimgs.json"
-    keypoint_indices = [0, 1, 2, 3]
+    image_folder = config.IMG_DIR
+    labels_path = config.LABELS_JSON
+    keypoint_indices = [-4, -3, -2, -1]
 
     train_ds = KeypointsSubsetDataset(
     img_folder=image_folder,
@@ -75,10 +76,10 @@ if __name__ == "__main__":
     split="train",
     keypoint_indices=keypoint_indices,
 )
-train_loader = DataLoader(
-    train_ds, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, pin_memory=config.PIN_MEMORY, shuffle=True
-)
+# train_loader = DataLoader(
+#     train_ds, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, pin_memory=config.PIN_MEMORY, shuffle=True
+# )
 
-mean, std = get_mean_std(train_loader)
-print(mean)
-print(std)
+# mean, std = get_mean_std(train_loader)
+# print(mean)
+# print(std)

@@ -6,8 +6,11 @@ from torch import nn
 import numpy as np
 from torchvision import transforms
 from PIL import Image
-import scr.krn.config as config
+import sys
+sys.path.append("../../scr/krn")
+import config
 import os
+import json
 
 
 def detect_object(image, detection_model):
@@ -67,16 +70,16 @@ def visualize_results(frame, bbox, keypoints, pad, orig_h, orig_w):
         keypoints[:, 1] = (keypoints[:, 1] * scale - pad) + y_min
 
     # Draw bounding box
-    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 4)
 
     # Draw keypoints
     for x, y in keypoints:
-        cv2.circle(frame, (int(x), int(y)), 3, (0, 0, 255), -1)
+        cv2.circle(frame, (int(x), int(y)), 5, (0, 0, 255), -1)
 
     return frame
 
 
-def process_video(input_video_path, output_video_path, detection_model, krn_model, device, num_kpts):
+def process_video(input_video_path, output_video_path, detection_model, krn_model, device, num_kpts, kpts_gt=None):
     """Process a video frame by frame, detect objects, predict keypoints, and save the output."""
     cap = cv2.VideoCapture(input_video_path)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -114,15 +117,22 @@ def process_video(input_video_path, output_video_path, detection_model, krn_mode
 
 
 if __name__ == "__main__":
-    input_video_path = "../../data/images/trajectories_videos/trajectory_10.mp4"
-    output_video_path = "../../videos/detect_regress_videos/inference_trajectory_10.mp4"
+    input_video_path = "../../videos/3072_2048/val/trajectories_videos/val_traj_1.mp4"
+    output_video_path = "../../videos/3072_2048/val/detect_regress_videos/infer_val_traj_1.mp4"
 
+    # with open("../../data_3072px/labels/labels_sat_27kimgs.json", "r") as f:
+    #     gt_labels = json.load(f)
+
+    # test_labels = gt_labels[24300:]
+
+    # print(test_labels)
+    # exit()
     # Load models
     detection_model = YOLO(config.ODN_MODEL_PATH)  # Object detection model
     krn_model = EfficientNet.from_pretrained("efficientnet-b0")
-    krn_model._fc = nn.Linear(1280, config.NUM_KPTS * 2)  # Assuming 16 keypoints
+    krn_model._fc = nn.Linear(1280, config.NUM_KPTS_INF * 2)  # Assuming 16 keypoints
     krn_model.load_state_dict(torch.load(config.KRN_MODEL_PATH, map_location=config.DEVICE)["state_dict"], strict=False)
     krn_model = krn_model.to(config.DEVICE)
 
     # Process video
-    process_video(input_video_path, output_video_path, detection_model, krn_model, config.DEVICE, config.NUM_KPTS)
+    process_video(input_video_path, output_video_path, detection_model, krn_model, config.DEVICE, config.NUM_KPTS_INF)

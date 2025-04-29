@@ -5,10 +5,11 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 from torch.utils.data import DataLoader, Dataset
+import config as config
 
 
 class KeypointsSubsetDataset(Dataset):
-    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', train_ratio=0.8, val_ratio=0.1, keypoint_indices=None):
+    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', num_train=21600, num_val=2700, keypoint_indices=None):
         """
         Args:
             img_folder (str): Path to the folder containing images.
@@ -33,8 +34,8 @@ class KeypointsSubsetDataset(Dataset):
         self.keypoint_indices = keypoint_indices if keypoint_indices is not None else list(range(num_kpts))
 
         num_images = len(self.image_names)
-        train_end = int(train_ratio * num_images)
-        val_end = train_end + int(val_ratio * num_images)
+        train_end = num_train
+        val_end = num_train + num_val
 
         if split == 'train':
             self.image_names = self.image_names[:train_end]
@@ -99,12 +100,12 @@ class KeypointsSubsetDataset(Dataset):
 
 if __name__ == "__main__":
 
-    images_dir = "../../data/images/trajectories_images"
-    labels_path = "../../data/labels/labels_5kimgs.json"
+    images_dir = config.IMG_DIR
+    labels_path = config.LABELS_JSON
     num_kpts = config.NUM_KPTS
 
     # Example: Train on keypoints 0, 1, and 2
-    keypoint_indices = [0, 1, 2, 3]
+    keypoint_indices = [-4, -3, -2, -1]
 
     ds_train = KeypointsSubsetDataset(img_folder=images_dir,
                                       json_file=labels_path,

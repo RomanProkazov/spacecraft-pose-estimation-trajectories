@@ -1,5 +1,6 @@
 import torch
 from torch_dataset import KeypointsDataset
+from torch_dataset_subset import KeypointsSubsetDataset
 from torch import nn, optim
 import config
 from tqdm import tqdm
@@ -53,7 +54,7 @@ def validate(loader, model, loss_fn, device):
 def do_training(image_folder, labels_path, keypoint_indices):
     num_kpts = len(keypoint_indices)  # Set num_kpts based on the number of keypoints being trained on
 
-    train_ds = KeypointsDataset(
+    train_ds = KeypointsSubsetDataset(
         img_folder=image_folder,
         json_file=labels_path,
         num_kpts=config.NUM_KPTS,  # Total number of keypoints in the dataset
@@ -61,11 +62,12 @@ def do_training(image_folder, labels_path, keypoint_indices):
         split="train",
         keypoint_indices=keypoint_indices,
     )
+
     train_loader = DataLoader(
         train_ds, batch_size=config.BATCH_SIZE, num_workers=config.NUM_WORKERS, pin_memory=config.PIN_MEMORY, shuffle=True
     )
 
-    val_ds = KeypointsDataset(
+    val_ds = KeypointsSubsetDataset(
         img_folder=image_folder,
         json_file=labels_path,
         num_kpts=config.NUM_KPTS,  # Total number of keypoints in the dataset
@@ -104,9 +106,9 @@ def do_training(image_folder, labels_path, keypoint_indices):
 
 
 if __name__ == "__main__":
-    keypoint_indices = [0, 1, 2, 3]  # Train on keypoints 0, 1, 2, and 3
+    keypoint_indices = [-4, -3, -2, -1]  # Train on keypoints 0, 1, 2, and 3
     do_training(
-        image_folder="../../data/images/trajectories_images",
-        labels_path="../../data/labels/labels_5kimgs.json",
+        image_folder=config.IMG_DIR,
+        labels_path=config.LABELS_JSON,
         keypoint_indices=keypoint_indices,
     )

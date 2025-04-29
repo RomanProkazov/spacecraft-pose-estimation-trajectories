@@ -83,8 +83,8 @@ class KeypointsDataset(Dataset):
 
 if __name__ == "__main__":
 
-    images_dir = "../../data/images/trajectories_images"
-    labels_path = "../../data/labels/labels_5kimgs.json"
+    images_dir = "../../data_3072px/images"
+    labels_path = "../../data_3072px/labels/labels_sat_27kimgs.json"
     num_kpts = 16
     ds_train = KeypointsDataset(img_folder=images_dir,
                                 json_file=labels_path,

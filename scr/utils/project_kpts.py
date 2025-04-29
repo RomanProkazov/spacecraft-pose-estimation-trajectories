@@ -5,11 +5,16 @@ import json
 from utils_pnp import *
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
+import sys
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(project_root))
+from scr.krn import config as config
+from scr.utils.utils_pnp import *
 
 
-def project_kpts_from_img_folder(image_folder_path="../../data_3072px/images",
-                                 json_data_path="../../data_3072px/labels/meta_keypoints.json",
-                                 camera_sat_json="../../data_3072px/labels/cam_sat.json",
+def project_kpts_from_img_folder(image_folder_path,
+                                 json_data_path,
+                                 camera_sat_json,
                                  idx=0):                           
     
     with open(json_data_path, 'r') as f:
@@ -17,20 +22,19 @@ def project_kpts_from_img_folder(image_folder_path="../../data_3072px/images",
 
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, cmt = np.array(data['sat_model'])*(-1), np.array(data['camera_matrix_real']) 
-    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.png')])
+    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix']) 
+    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.jpg')], key=lambda x: int(x.stem.split('_')[-1]))
 
 
-    image = cv2.imread(str(image_path_list[1]), cv2.IMREAD_GRAYSCALE)
-    labels = annotations[366]
+    image = cv2.imread(str(image_path_list[idx]), cv2.IMREAD_GRAYSCALE)
+    labels = annotations[idx]
+
 
     # Ground truth data
     q_gt =np.array(labels['pose'])
     t_gt = labels['translation']
 
     distCoeffs = np.zeros((5, 1), dtype=np.float32)
-    distCoeffs = np.array(data['distortion_coefficients']).reshape(5, 1)
-    # distCoeffs = distCoeffs * (-1)
     image_points = project_keypoints(q_gt, t_gt, cmt, distCoeffs, sat_model)
     image_points = image_points.T
 
@@ -39,18 +43,21 @@ def project_kpts_from_img_folder(image_folder_path="../../data_3072px/images",
     plt.show()
 
 
-def visualize_kpts_from_img_folder(image_folder_path="../../data_3072px/images",
-                                 json_data_path="../../data_3072px/labels/meta_keypoints.json",
-                                 camera_sat_json="../../ddata_3072px/labels/cam_sat.json",
+def visualize_kpts_from_img_folder(image_folder_path,
+                                 json_data_path,
+                                 camera_sat_json,
                                  idx=0):                           
     
     with open(json_data_path, 'r') as f:
         annotations = json.load(f)
 
-    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.png')])
+    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.jpg')], key=lambda x: int(x.stem.split('_')[-1]))
 
     image = cv2.imread(str(image_path_list[idx]), cv2.IMREAD_GRAYSCALE)
     labels = annotations[idx] 
+
+    print(image_path_list[idx])
+    print(labels)
 
     image_points = np.array(labels['keypoints']).reshape(-1, 2)
 
@@ -58,5 +65,62 @@ def visualize_kpts_from_img_folder(image_folder_path="../../data_3072px/images",
     plt.scatter(image_points[:, 0], image_points[:, 1], s=10)
     plt.show()
 
-project_kpts_from_img_folder()
-# visualize_kpts_from_img_folder()mina
+
+def project_kpts_from_image(image_path,
+                                 json_data_path,
+                                 camera_sat_json,
+                                 idx=0):                           
+    
+    with open(json_data_path, 'r') as f:
+        annotations = json.load(f)
+
+    with open(camera_sat_json, 'r') as json_file:
+        data = json.load(json_file)
+    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix']) 
+   
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    labels = annotations[idx]
+
+    # Ground truth data
+    q_gt =np.array(labels['pose'])
+    t_gt = labels['translation']
+
+    distCoeffs = np.zeros((5, 1), dtype=np.float32)
+    image_points = project_keypoints(q_gt, t_gt, cmt, distCoeffs, sat_model)
+    image_points = image_points.T
+
+    plt.imshow(image, cmap='gray')
+    plt.scatter(image_points[:, 0], image_points[:, 1], s=10)
+    plt.show()
+
+
+if __name__ == "__main__":
+    camera_sat_model = config.SAT_CAM_JSON
+    image_folder_path = Path(config.IMG_DIR)
+    json_path = config.LABELS_JSON
+    # image_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/images/blender_kpts_test/img_0160.jpg"
+
+
+    # old data
+    # image_path = "../../data_3072px/images/img_26986.jpg"
+    # model_path = "../../data_3072px/labels/labels_sat_27kimgs.json"
+
+    # # check ok
+    image_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/images/blender_kpts_test/img_2697.jpg"
+    json_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/labels/meta_keypoints_new_check.json"
+
+    
+    # project_kpts_from_img_folder(image_folder_path=image_folder_path,
+    #                                json_data_path=json_path,
+    #                                camera_sat_json=camera_sat_model,
+    #                                idx=25734)
+
+    # visualize_kpts_from_img_folder(image_folder_path=image_folder_path,
+    #                                json_data_path=json_path,
+    #                                camera_sat_json=camera_sat_model,
+    #                                idx=24734)
+
+    project_kpts_from_image(image_path,
+                                json_data_path=json_path,
+                                camera_sat_json=camera_sat_model,
+                                idx=2696)

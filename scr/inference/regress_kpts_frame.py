@@ -1,7 +1,6 @@
 from efficientnet_pytorch import EfficientNet
 from torch import nn
 import torch
-import scr.krn.config as config
 import cv2
 import matplotlib.pyplot as plt
 from torchvision import transforms
@@ -9,6 +8,9 @@ from PIL import Image
 from ultralytics import YOLO
 import numpy as np
 import os
+import sys
+sys.path.append("../../scr/krn")
+import config 
 
 
 def detect_object(image, detection_model):
@@ -41,7 +43,8 @@ def predict_keypoints(image, krn_model, device, num_kpts):
     """Predict keypoints using the keypoint regression network."""
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.3820, 0.3820, 0.3820], std=[0.3820, 0.3820, 0.3820])
+        # transforms.Normalize(mean=[-0.6018, -0.6015, -0.6016], std=[0.5889, 0.5888, 0.5888]),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
     image_tensor = transform(Image.fromarray(image)).unsqueeze(0).to(device)
 
@@ -55,7 +58,7 @@ def predict_keypoints(image, krn_model, device, num_kpts):
 def visualize_keypoints_on_crop(cropped_image, keypoints):
     """Visualize keypoints on the padded 224x224 crop."""
     for x, y in keypoints:
-        cv2.circle(cropped_image, (int(x), int(y)), 3, (0, 255, 0), -1)
+        cv2.circle(cropped_image, (int(x), int(y)), 1, (0, 255, 0), -1)
 
     # Display the image
     plt.imshow(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
@@ -67,12 +70,12 @@ if __name__ == "__main__":
     # Load models
     detection_model = YOLO(config.ODN_MODEL_PATH)  # Object detection model
     krn_model = EfficientNet.from_pretrained("efficientnet-b0")
-    krn_model._fc = nn.Linear(1280, config.NUM_KPTS * 2)
+    krn_model._fc = nn.Linear(1280, config.NUM_KPTS_INF * 2)
     krn_model.load_state_dict(torch.load(config.KRN_MODEL_PATH, map_location=config.DEVICE)["state_dict"], strict=False)
     krn_model = krn_model.to(config.DEVICE)
 
     # Input image
-    idx = 200
+    idx = 492
     image_names = sorted(os.listdir(config.TEST_IMG_DIR), key=lambda x: int(x[4:-4]))
     images_list = [os.path.join(config.TEST_IMG_DIR, filename) for filename in image_names]
     original_image = cv2.imread(images_list[idx])
@@ -85,9 +88,5 @@ if __name__ == "__main__":
         # Process the first detected object
         bbox = bboxes[0]
         cropped_image = preprocess_crop(original_image, bbox)
-
-        # Keypoint prediction
         keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE, num_kpts=config.NUM_KPTS)
-
-        # Visualize keypoints on the cropped image
         visualize_keypoints_on_crop(cropped_image, keypoints)

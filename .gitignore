@@ -20,8 +20,10 @@
 *.zip
 
 
-data
+data_512px
+data_3072px
 data_splitted 
+data_platform
 runs
 videos
  

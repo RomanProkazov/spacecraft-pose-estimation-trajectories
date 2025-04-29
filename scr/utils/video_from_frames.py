@@ -2,7 +2,8 @@ import cv2
 import os
 
 def create_video_from_images(image_folder, output_video, fps=30, start_idx=0, end_idx=500):
-    images = [img for img in os.listdir(image_folder) if img.endswith(".png") or img.endswith(".jpg")] 
+    images = sorted([img for img in os.listdir(image_folder) if img.endswith(".png") or img.endswith(".jpg")], 
+                    key=lambda x: int(x.split('.')[0].split('_')[-1])) 
     images.sort()  # Sort images by name
 
     if not images:
@@ -18,17 +19,17 @@ def create_video_from_images(image_folder, output_video, fps=30, start_idx=0, en
         frame = cv2.imread(img_path)
         video.write(frame)
 
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
     video.release()
     print(f"Video saved to {output_video}")
 
 # Example usage:
-image_folder = "../../data_platform/images"  
+image_folder = "../../data_splitted/data_odn/val/images"  
 total_images = len([img for img in os.listdir(image_folder) if img.endswith(".png") or img.endswith(".jpg")])
-frames_per_video = 500
+frames_per_video = 900
 
 for i in range(0, total_images, frames_per_video):
     start_idx = i
     end_idx = min(i + frames_per_video, total_images)
-    output_video = f"../../videos/videos_platform/trajectories/trajectory_{i // frames_per_video + 1}.mp4"
+    output_video = f"../../videos/3072_2048/val/trajectories_videos/val_traj_{i // frames_per_video + 1}.mp4"
     create_video_from_images(image_folder, output_video, fps=30, start_idx=start_idx, end_idx=end_idx)

@@ -5,15 +5,19 @@ import numpy as np
 import json
 from utils_pnp import *
 import matplotlib.pyplot as plt
+import sys
+sys.path.append("../../scr/krn")
+import config as config
 
 
-def add_kpts_to_json(image_folder_path="../../data_platform/images",
-                     json_data_path="../../data_platform/labels/meta_keypoints_plat.json",
-                     camera_sat_json="../../data_platform/labels/cam_plat.json",
-                     output_json="../../data_platform/labels/labels_plat_5kimgs.json",
-                     res=(1280, 800)):
 
-    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.png')])
+def add_kpts_to_json(image_folder_path,
+                     json_data_path,
+                     camera_sat_json,
+                     output_json,
+                     res=(3072, 2048)):
+
+    image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.jpg')], key=lambda x: int(x.stem.split('_')[-1]))
     with open(json_data_path, 'r') as f:
         annotations = json.load(f)
     # Clean data from blender unused info
@@ -24,7 +28,7 @@ def add_kpts_to_json(image_folder_path="../../data_platform/images",
     ]
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, cmt = np.array(data['sat_model'])*(-1), np.array(data['camera_matrix'])
+    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix'])
 
 
     kpts_list = []
@@ -68,12 +72,18 @@ def add_kpts_to_json(image_folder_path="../../data_platform/images",
 
         # print(image_points)
         # plt.imshow(image, cmap='gray')
-        # # plt.scatter(image_points[:, 0], image_points[:, 1], s=10)
-        # plt.scatter(bbox_array[:, 0], bbox_array[:, 1], s=10)
+        # plt.scatter(image_points[:, 0], image_points[:, 1], s=10)
+        # # plt.scatter(bbox_array[:, 0], bbox_array[:, 1], s=10)
         # plt.show()
 
 
     with open(output_json, "w") as json_file:
         json.dump(annotations, json_file, indent=4)
 
-add_kpts_to_json()
+
+if __name__ == "__main__":
+    output_json = "../../data_3072px/labels/labels_sat_27kimgs.json"
+    add_kpts_to_json(image_folder_path=config.IMG_DIR,
+                     json_data_path=config.LABELS_JSON,
+                     camera_sat_json=config.SAT_CAM_JSON,
+                     output_json=output_json)
