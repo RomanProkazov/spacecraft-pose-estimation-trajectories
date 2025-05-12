@@ -82,7 +82,7 @@ def add_kpts_to_json(image_folder_path,
 
 
 if __name__ == "__main__":
-    output_json = "../../data_3072px/labels/labels_sat_27kimgs.json"
+    output_json = "../../data_3072px/labels/labels_sat_9kimgs.json"
     add_kpts_to_json(image_folder_path=config.IMG_DIR,
                      json_data_path=config.LABELS_JSON,
                      camera_sat_json=config.SAT_CAM_JSON,

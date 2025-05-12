@@ -75,9 +75,9 @@ if __name__ == "__main__":
     krn_model = krn_model.to(config.DEVICE)
 
     # Input image
-    idx = 492
-    image_names = sorted(os.listdir(config.TEST_IMG_DIR), key=lambda x: int(x[4:-4]))
-    images_list = [os.path.join(config.TEST_IMG_DIR, filename) for filename in image_names]
+    idx = 8299
+    image_names = sorted(os.listdir(config.IMG_DIR), key=lambda x: int(x[4:-4]))
+    images_list = [os.path.join(config.IMG_DIR, filename) for filename in image_names]
     original_image = cv2.imread(images_list[idx])
 
     # Object detection

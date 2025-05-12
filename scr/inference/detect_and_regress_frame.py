@@ -14,14 +14,12 @@ import os
 
 
 def detect_object(image, detection_model):
-    """Detect objects in the image using YOLO."""
     results = detection_model(image)
-    boxes = results[0].boxes.xyxy.cpu().numpy()  # Get bounding boxes
+    boxes = results[0].boxes.xyxy.cpu().numpy() 
     return boxes
 
 
 def preprocess_crop(image, bbox, target_size=(224, 224)):
-    """Crop, pad, and resize the image to make it square."""
     x_min, y_min, x_max, y_max = map(int, bbox)
     cropped_image = image[y_min:y_max, x_min:x_max]
 
@@ -34,16 +32,13 @@ def preprocess_crop(image, bbox, target_size=(224, 224)):
         pad = (orig_w - orig_h) // 2
         padded_image = cv2.copyMakeBorder(cropped_image, pad, pad, 0, 0, cv2.BORDER_CONSTANT, value=[0, 0, 0])
 
-    # Resize to target size
     resized_image = cv2.resize(padded_image, target_size)
     return resized_image, pad, orig_h, orig_w
 
 
-def predict_keypoints(image, krn_model, device, num_kpts):
-    """Predict keypoints using the keypoint regression network."""
+def predict_keypoints(image, krn_model, device):
     transform = transforms.Compose([
         transforms.ToTensor()
-
     ])
     image_tensor = transform(Image.fromarray(image)).unsqueeze(0).to(device)
 
@@ -55,7 +50,6 @@ def predict_keypoints(image, krn_model, device, num_kpts):
 
 
 def visualize_keypoints_on_crop(cropped_image, keypoints):
-    """Visualize keypoints on the padded 224x224 crop."""
     for x, y in keypoints:
         cv2.circle(cropped_image, (int(x), int(y)), 3, (0, 255, 0), -1)
 
@@ -78,15 +72,13 @@ def visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w):
     else:
         # Padding was applied to the height, scale based on original padded width (orig_w)
         scale = orig_w / 224.0
-        keypoints[:, 0] = (keypoints[:, 0] * scale) + x_min        # x remains same
+        keypoints[:, 0] = (keypoints[:, 0] * scale) + x_min   
         keypoints[:, 1] = (keypoints[:, 1] * scale - pad) + y_min
 
-    # Draw bounding box
-    cv2.rectangle(original_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
-    # Draw keypoints
+    cv2.rectangle(original_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
     for x, y in keypoints:
-        cv2.circle(original_image, (int(x), int(y)), 10, (0, 0, 255), -1)
+        cv2.circle(original_image, (int(x), int(y)), 5, (0, 0, 255), -1)
 
     # Display the image
     plt.imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
@@ -98,33 +90,28 @@ def visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w):
 
 
 if __name__ == "__main__":
-    idx = 1000
+    idx = 8700
     # Load models
-    detection_model = YOLO(config.ODN_MODEL_PATH)  # Object detection model
+    detection_model = YOLO(config.ODN_MODEL_PATH) 
     krn_model = EfficientNet.from_pretrained("efficientnet-b0")
-    krn_model._fc = nn.Linear(1280, config.NUM_KPTS_INF * 2)  # Assuming 16 keypoints
+    krn_model._fc = nn.Linear(1280, config.NUM_KPTS_INF * 2) 
     krn_model.load_state_dict(torch.load(config.KRN_MODEL_PATH, weights_only=True)["state_dict"], strict=False)
     krn_model = krn_model.to(config.DEVICE)
 
-    # Input image
-    image_names = sorted(os.listdir(config.TEST_IMG_DIR), key=lambda x: int(x[4:-4]))
-    images_list = [os.path.join(config.TEST_IMG_DIR, filename) for filename in image_names]
+
+    image_names = sorted(os.listdir(config.IMG_DIR), key=lambda x: int(x[4:-4]))
+    images_list = [os.path.join(config.IMG_DIR, filename) for filename in image_names]
 
     original_image = cv2.imread(str(images_list[idx]))
 
-    # Object detection
     bboxes = detect_object(original_image, detection_model)
     if len(bboxes) == 0:
         print("No objects detected.")
     else:
-        # Process the first detected object
         bbox = bboxes[0]
         cropped_image, pad, orig_h, orig_w = preprocess_crop(original_image, bbox)
 
-        # Keypoint prediction
-        keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE, num_kpts=config.NUM_KPTS)
+        keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE, num_kpts=config.NUM_KPTS_INF)
         print("Predicted keypoints:", keypoints)
         
-
-        # Visualize results
         visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w)

@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from cv2 import aruco
 import json
+import screeninfo
 
 def load_camera_parameters(camera_matrix_path):
     """Load camera calibration data from JSON file"""
@@ -10,6 +11,31 @@ def load_camera_parameters(camera_matrix_path):
     camera_matrix = np.array(cam_dist['camera_matrix'])
     distortion_coeffs = np.array(cam_dist['distortion_coefficients'])
     return camera_matrix, distortion_coeffs
+
+
+def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
+    '''
+    This will estimate the rvec and tvec for each of the marker corners detected by:
+       corners, ids, rejectedImgPoints = detector.detectMarkers(image)
+    corners - is an array of detected corners for each detected marker in the image
+    marker_size - is the size of the detected markers
+    mtx - is the camera matrix
+    distortion - is the camera distortion matrix
+    RETURN list of rvecs, tvecs, and trash (so that it corresponds to the old estimatePoseSingleMarkers())
+    '''
+    marker_points = np.array([[-marker_size / 2, marker_size / 2, 0],
+                              [marker_size / 2, marker_size / 2, 0],
+                              [marker_size / 2, -marker_size / 2, 0],
+                              [-marker_size / 2, -marker_size / 2, 0]], dtype=np.float32)
+    trash = []
+    rvecs = []
+    tvecs = []
+    for c in corners:
+        nada, R, t = cv2.solvePnP(marker_points, c, mtx, distortion, False, cv2.SOLVEPNP_IPPE_SQUARE)
+        rvecs.append(R)
+        tvecs.append(t)
+        trash.append(nada)
+    return rvecs, tvecs, trash
 
 def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_length):
     """Estimate pose of ArUco markers in an image"""
@@ -36,7 +62,7 @@ def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_len
         image = aruco.drawDetectedMarkers(image, corners, ids)
 
         # Estimate pose for each marker
-        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+        rvecs, tvecs, _ = my_estimatePoseSingleMarkers(
             corners, 
             marker_length, 
             camera_matrix, 
@@ -61,16 +87,23 @@ def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_len
     else:
         print("No markers detected.")
 
-    # Display results
-    cv2.imshow("ArUco Pose Estimation", image)
+    # Get screen dimensions
+    screen = screeninfo.get_monitors()[0]
+    screen_width, screen_height = screen.width, screen.height
+    h, w = image.shape[:2]
+    scale = min(screen_width/w, screen_height/h)
+    img_resized = cv2.resize(image, (int(w*scale), int(h*scale)))
+    
+    # Display stream
+    cv2.imshow("ArUco Pose Estimation", img_resized)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     # Configuration
-    image_path = "frame_1745928396935.png"  # Update this path
+    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_3072px/images/img_0010.jpg"  # Update this path
     camera_matrix_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_3072px/labels/cam_sat.json"     # Update this path
-    marker_length = 0.064                   # Physical size of marker in meters
+    marker_length = 0.08                   # Physical size of marker in meters
 
     # Run pose estimation
     camera_matrix, distortion_coefficients = load_camera_parameters(camera_matrix_path)

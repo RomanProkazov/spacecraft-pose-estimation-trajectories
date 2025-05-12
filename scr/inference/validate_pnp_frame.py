@@ -12,7 +12,8 @@ def do_pnp_frame(image_path, labels, sat_model, cmt):
     # Ground truth data
     q_gt = np.array(labels['pose'])
     t_gt = np.array(labels['translation'])
-    image_points = np.array(labels['keypoints'])
+    # image_points = np.array(labels['keypoints'])
+    image_points = np.array(labels['kpts_preds'])
 
     q_pr, t_pr = pnp(sat_model, image_points, cmt)
 
@@ -27,21 +28,23 @@ def do_pnp_frame(image_path, labels, sat_model, cmt):
     return t_error, r_error
 
 
-
-if __name__ == "__main__":
-
-    idx = 99
+def main():
+    idx = 7000
     camera_sat_model = config.SAT_CAM_JSON
     image_folder_path = Path(config.TEST_IMG_DIR)
-    json_path = config.LABELS_JSON
+    json_path = config.LABELS_JSON_PREDS
 
     with open(config.SAT_CAM_JSON, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix'])
-    distCoeffs_real = np.array(data['distortion_coefficients'])
+    sat_model, cmt = np.array(data['sat_model_marker']), np.array(data['camera_matrix'])
 
     image_path_list = [image for image in sorted(image_folder_path.rglob('*.jpg'), key=lambda x: int(x.stem.split('_')[-1]))]
     with open(json_path, 'r') as f:
         annotations = json.load(f)
   
-    do_pnp_frame(image_path_list[idx], annotations[idx], sat_model, cmt)
+    do_pnp_frame(image_path_list[7000], annotations[0], sat_model, cmt)
+
+
+if __name__ == "__main__":
+    main()
+

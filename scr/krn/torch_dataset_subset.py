@@ -9,7 +9,7 @@ import config as config
 
 
 class KeypointsSubsetDataset(Dataset):
-    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', num_train=21600, num_val=2700, keypoint_indices=None):
+    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', num_train=7000, num_val=1900, keypoint_indices=None):
         """
         Args:
             img_folder (str): Path to the folder containing images.
@@ -106,6 +106,7 @@ if __name__ == "__main__":
 
     # Example: Train on keypoints 0, 1, and 2
     keypoint_indices = [-4, -3, -2, -1]
+    # keypoint_indices = None
 
     ds_train = KeypointsSubsetDataset(img_folder=images_dir,
                                       json_file=labels_path,
@@ -132,7 +133,7 @@ if __name__ == "__main__":
     val_loader = DataLoader(ds_val, batch_size=1, shuffle=True, num_workers=0)
     test_loader = DataLoader(ds_test, batch_size=1, shuffle=True, num_workers=0)
 
-    for idx, (x, y) in enumerate(test_loader):
+    for idx, (x, y) in enumerate(val_loader):
         plt.imshow(x[0][0].detach().cpu().numpy(), cmap='gray')  # [0][0] - for taking 1st example and 1st channel
         plt.plot(y[0][0::2].detach().cpu().numpy(), y[0][1::2].detach().cpu().numpy(), "go", markersize=4)
         plt.show()

@@ -101,6 +101,9 @@ def do_training(image_folder, labels_path, keypoint_indices):
             }
             print(f"New best model found with validation RMSE: {best_val_loss}")
             save_checkpoint(best_checkpoint, filename=config.CHECKPOINT_FILE)
+        if i % 10 == 0:
+            print(f"Saving checkpoint at epoch {i}")
+            save_checkpoint(best_checkpoint, filename=config.CHECKPOINT_PROGRESS + f"/checkpoint_{i}epochs.pth.tar")
 
 
 if __name__ == "__main__":
