@@ -129,26 +129,26 @@ if __name__ == "__main__":
     # image_path = "../../data_3072px/images/img_26986.jpg"
     # model_path = "../../data_3072px/labels/labels_sat_27kimgs.json"
 
-    # # check ok
-    image_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/images/blender_kpts_test/Image0142.png"
-    json_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/labels/meta_keypoints.json"
-    camera_sat_model = "../../data_512px_5kimgs/labels/cam_sat.json"
+    # # # check ok
+    # image_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/images/blender_kpts_test/Image0142.png"
+    # json_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/labels/meta_keypoints.json"
+    # camera_sat_model = "../../data_512px_5kimgs/labels/cam_sat.json"
 
     
-    # project_kpts_from_img_folder(image_folder_path=image_folder_path,
-    #                                json_data_path=json_path,
-    #                                camera_sat_json=camera_sat_model,
-    #                                idx=699)
+    project_kpts_from_img_folder(image_folder_path=image_folder_path,
+                                   json_data_path=json_path,
+                                   camera_sat_json=camera_sat_model,
+                                   idx=199)
 
     # visualize_kpts_from_img_folder(image_folder_path=image_folder_path,
     #                                json_data_path=json_path,
     #                                camera_sat_json=camera_sat_model,
     #                                idx=1799)
 
-    project_kpts_from_image(image_path,
-                                json_data_path=json_path,
-                                camera_sat_json=camera_sat_model,
-                                idx=4047)
+    # project_kpts_from_image(image_path,
+    #                             json_data_path=json_path,
+    #                             camera_sat_json=camera_sat_model,
+    #                             idx=4047)
 
     # visualize_kpts_from_img(image_path=image_path,
     #                             json_data_path=json_path,

@@ -15,7 +15,7 @@ def add_kpts_to_json(image_folder_path,
                      json_data_path,
                      camera_sat_json,
                      output_json,
-                     res=(3072, 2048)):
+                     res=(640, 480)):
 
     image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.jpg')], key=lambda x: int(x.stem.split('_')[-1]))
     with open(json_data_path, 'r') as f:
@@ -82,8 +82,9 @@ def add_kpts_to_json(image_folder_path,
 
 
 if __name__ == "__main__":
-    output_json = "../../data_3072px/labels/labels_sat_9kimgs.json"
+    output_json = "../../data_640px/labels/labels_sat_640px_5kimgs.json"
     add_kpts_to_json(image_folder_path=config.IMG_DIR,
                      json_data_path=config.LABELS_JSON,
                      camera_sat_json=config.SAT_CAM_JSON,
-                     output_json=output_json)
+                     output_json=output_json,
+                     res=(640, 480))

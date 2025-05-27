@@ -75,8 +75,8 @@ def dataset_split_for_yolo(img_folder_path="../../data_3072px/trajectories_image
 
 if __name__ == "__main__":
     img_folder_path = config.IMG_DIR
-    labels_folder_path = "../../data_3072px/labels/seg_yolo"
-    output_split_dir ="../../data_splitted/data_seg"
+    labels_folder_path = "../../data_640px/labels/bbox_yolo"
+    output_split_dir ="../../data_splitted/data_odn"
 
     dataset_split_for_yolo(img_folder_path, labels_folder_path, output_split_dir,
-                           num_train=21600, num_val=2700, num_test=2700)
+                           num_train=4500, num_val=499, num_test=1)

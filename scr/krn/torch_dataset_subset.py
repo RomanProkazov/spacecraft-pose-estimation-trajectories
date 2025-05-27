@@ -9,7 +9,7 @@ import config as config
 
 
 class KeypointsSubsetDataset(Dataset):
-    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', num_train=7000, num_val=1900, keypoint_indices=None):
+    def __init__(self, img_folder, json_file, num_kpts, transform=None, target_size=(224, 224), split='train', num_train=4500, num_val=499, keypoint_indices=None):
         """
         Args:
             img_folder (str): Path to the folder containing images.

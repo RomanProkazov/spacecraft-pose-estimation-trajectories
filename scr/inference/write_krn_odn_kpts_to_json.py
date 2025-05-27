@@ -42,7 +42,7 @@ def unscale_keypoints(bbox, keypoints, pad, orig_h, orig_w):
     return keypoints
 
 
-def main():
+def write_predictions_into_json(start_idx):
     detection_model = YOLO(config.ODN_MODEL_PATH)
     krn_model = load_krn_model(config.KRN_MODEL_PATH, config.NUM_KPTS_INF)
 
@@ -51,10 +51,10 @@ def main():
 
     with open(json_path, 'r') as f:
         annotations = json.load(f)
-    annotations = annotations[7000:]
+    annotations = annotations[start_idx:]
 
     image_path_list = sorted([image for image in Path(image_folder_path).rglob('*.jpg')], key=lambda x: int(x.stem.split('_')[-1]))
-    image_path_list = image_path_list[7000:] 
+    image_path_list = image_path_list[start_idx:] 
 
     for idx in tqdm(range(len(image_path_list))):
         image_path = image_path_list[idx]
@@ -78,4 +78,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    write_predictions_into_json(start_idx=4500)

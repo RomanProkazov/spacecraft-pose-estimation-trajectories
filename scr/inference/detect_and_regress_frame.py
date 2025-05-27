@@ -78,7 +78,7 @@ def visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w):
 
     cv2.rectangle(original_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
     for x, y in keypoints:
-        cv2.circle(original_image, (int(x), int(y)), 5, (0, 0, 255), -1)
+        cv2.circle(original_image, (int(x), int(y)), 2, (0, 0, 255), -1)
 
     # Display the image
     plt.imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
@@ -90,7 +90,7 @@ def visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w):
 
 
 if __name__ == "__main__":
-    idx = 8700
+    idx = 4700
     # Load models
     detection_model = YOLO(config.ODN_MODEL_PATH) 
     krn_model = EfficientNet.from_pretrained("efficientnet-b0")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         bbox = bboxes[0]
         cropped_image, pad, orig_h, orig_w = preprocess_crop(original_image, bbox)
 
-        keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE, num_kpts=config.NUM_KPTS_INF)
+        keypoints = predict_keypoints(cropped_image, krn_model, config.DEVICE)
         print("Predicted keypoints:", keypoints)
         
         visualize_results(original_image, bbox, keypoints, pad, orig_h, orig_w)

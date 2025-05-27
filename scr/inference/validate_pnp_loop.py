@@ -22,12 +22,12 @@ def load_images(image):
 def validate_pnp_loop(image_folder_path,
                     json_data_path,
                     camera_sat_json,
-                    ):
+                    start_idx):
                                
     labels = load_labels(json_data_path)
     image_path_list = load_images(image_folder_path)
 
-    image_path_list = image_path_list[7000:]
+    image_path_list = image_path_list[start_idx:]
 
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
@@ -48,7 +48,7 @@ def main():
     camera_sat_model = config.SAT_CAM_JSON
     image_folder_path = Path(config.TEST_IMG_DIR)
     json_path = config.LABELS_JSON_PREDS
-    validate_pnp_loop(image_folder_path, json_path, camera_sat_model)
+    validate_pnp_loop(image_folder_path, json_path, camera_sat_model, start_idx=4500)
 
 
 if __name__ == "__main__":

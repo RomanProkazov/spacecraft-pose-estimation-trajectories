@@ -35,7 +35,7 @@ def bbox_txt_from_json_keypoints(path_to_json_file, labels_path_bbox, res):
 
 if __name__ == "__main__":
     path_to_json_file = config.LABELS_JSON
-    labels_path_bbox = "../../data_3072px/labels/bbox_yolo"
-    res = (3072, 2048)
+    labels_path_bbox = "../../data_640px/labels/bbox_yolo"
+    res = (640, 480)
     bbox_txt_from_json_keypoints(path_to_json_file, labels_path_bbox, res)
     print("Done!")
