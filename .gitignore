@@ -27,6 +27,7 @@ data_platform
 runs
 videos
 
+!CMakeLists.txt
 !/ros-realsense/realsense_ros_commands.txt
 # # Except the important_folder and its contents
 # !/ultralytics_folder/od_seg_pos.ipynb
