@@ -27,6 +27,8 @@ data_platform
 runs
 videos
 
+!sc_odn_config.yaml
+!sc_seg_config.yaml
 !CMakeLists.txt
 !/ros-realsense/realsense_ros_commands.txt
 # # Except the important_folder and its contents
