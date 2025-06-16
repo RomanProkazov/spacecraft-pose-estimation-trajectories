@@ -31,7 +31,7 @@ def validate_pnp_loop(image_folder_path,
 
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, cmt = np.array(data['sat_model_marker']), np.array(data['camera_matrix']) 
+    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix']) 
 
     t_error_sum, r_error_sum = 0, 0
     num_images = len(image_path_list)

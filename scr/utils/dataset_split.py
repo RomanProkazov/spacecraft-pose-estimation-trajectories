@@ -17,6 +17,7 @@ def dataset_split_for_yolo(img_folder_path="../../data_3072px/trajectories_image
   
 
     image_path_list = [image for image in sorted(Path(img_folder_path).rglob('*.jpg'), key=lambda x: int(x.stem.split('_')[-1]))]
+    # image_path_list = image_path_list[:4200]
     labels_path_list = [label for label in sorted(Path(labels_folder_path).rglob('*.txt'), key=lambda x: int(x.stem.split('_')[-1]))]
 
     # print(len(image_path_list))
@@ -75,8 +76,9 @@ def dataset_split_for_yolo(img_folder_path="../../data_3072px/trajectories_image
 
 if __name__ == "__main__":
     img_folder_path = config.IMG_DIR
-    labels_folder_path = "../../data_640px/labels/bbox_yolo"
-    output_split_dir ="../../data_splitted/data_odn"
+    img_folder_path = config.IMG_DIR_MARKER
+    labels_folder_path = "../../data/labels/kpts_yolo_marker_20"
+    output_split_dir ="../../data_splitted/data_krn_marker"
 
     dataset_split_for_yolo(img_folder_path, labels_folder_path, output_split_dir,
-                           num_train=4500, num_val=499, num_test=1)
+                           num_train=5000, num_val=1000, num_test=0)

@@ -9,7 +9,7 @@ def load_camera_parameters(camera_matrix_path):
     with open(camera_matrix_path, 'r') as f:
         cam_dist = json.load(f)
     camera_matrix = np.array(cam_dist['camera_matrix'])
-    distortion_coeffs = np.array(cam_dist['distortion_coefficients'])
+    distortion_coeffs = np.array(cam_dist['dist'])
     return camera_matrix, distortion_coeffs
 
 
@@ -87,22 +87,13 @@ def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_len
     else:
         print("No markers detected.")
 
-    # Get screen dimensions
-    screen = screeninfo.get_monitors()[0]
-    screen_width, screen_height = screen.width, screen.height
-    h, w = image.shape[:2]
-    scale = min(screen_width/w, screen_height/h)
-    img_resized = cv2.resize(image, (int(w*scale), int(h*scale)))
     
-    # Display stream
-    cv2.imshow("ArUco Pose Estimation", img_resized)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.imwrite("output_pose_estimation.png", image)
 
 if __name__ == "__main__":
     # Configuration
-    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_3072px/images/img_0010.jpg"  # Update this path
-    camera_matrix_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_3072px/labels/cam_sat.json"     # Update this path
+    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_real/lux_sat_data_real_v1_nobck/frame_1511.jpg"  # Update this path
+    camera_matrix_path = "../../data_1280px/labels/cam_sat.json"     # Update this path
     marker_length = 0.08                   # Physical size of marker in meters
 
     # Run pose estimation

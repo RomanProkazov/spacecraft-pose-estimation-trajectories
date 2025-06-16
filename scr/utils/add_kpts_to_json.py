@@ -29,9 +29,11 @@ def add_kpts_to_json(image_folder_path,
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
     sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix'])
+    sat_model[:, 0] *= -1
 
 
     kpts_list = []
+    # annotations = annotations[:14000]  # Limit to 14k images for processing
     num_images = len(image_path_list)
     t_error_sum, r_error_sum, speed_score_sum  = 0, 0, 0
     for idx in tqdm(range(num_images),
@@ -44,11 +46,12 @@ def add_kpts_to_json(image_folder_path,
 
         # Ground truth data
         q_gt =np.array(labels['pose'])
-        t_gt = np.array(labels['translation'])
+        t_gt = np.array(labels['translation'])*400000
 
         distCoeffs = np.zeros((5, 1), dtype=np.float32)
         image_points = project_keypoints(q_gt, t_gt, cmt, distCoeffs, sat_model)
         image_points = image_points.T
+        image_points_marker = image_points[-4:]
 
         # Calculate bbox coords from keypoints    
         x_min = np.min(image_points[:, 0])
@@ -62,13 +65,23 @@ def add_kpts_to_json(image_folder_path,
         x_max = max(0, min(x_max, res[0]))
         y_max = max(0, min(y_max, res[1]))
 
+        # Marker bounding box  
+        x_min_marker = np.min(image_points_marker[:, 0])
+        y_min_marker = np.min(image_points_marker[:, 1])
+        x_max_marker = np.max(image_points_marker[:, 0])
+        y_max_marker = np.max(image_points_marker[:, 1])
+
         bbox = [x_min, y_min, x_max, y_max]
         bbox_array = np.array(bbox).reshape(2, 2)
+
+        bbox_marker = [x_min_marker, y_min_marker, x_max_marker, y_max_marker]
+        bbox_array_marker= np.array(bbox_marker).reshape(2, 2)
 
         labels['keypoints'] = image_points.tolist()
         labels['filename'] = image_path_list[idx].name
         labels['translation'] = t_gt.tolist()
         labels['bbox_xyxy'] = bbox
+        labels['bbox_marker'] = bbox_marker
 
         # print(image_points)
         # plt.imshow(image, cmap='gray')
@@ -82,9 +95,9 @@ def add_kpts_to_json(image_folder_path,
 
 
 if __name__ == "__main__":
-    output_json = "../../data_640px/labels/labels_sat_640px_5kimgs.json"
+    output_json = "../../data/labels/labels_sat_1280px_20kimgs_leo_2.json"
     add_kpts_to_json(image_folder_path=config.IMG_DIR,
                      json_data_path=config.LABELS_JSON,
                      camera_sat_json=config.SAT_CAM_JSON,
                      output_json=output_json,
-                     res=(640, 480))
+                     res=(1280, 720))

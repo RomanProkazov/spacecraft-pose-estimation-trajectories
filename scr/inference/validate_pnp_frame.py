@@ -13,7 +13,7 @@ def do_pnp_frame(image_path, labels, sat_model, cmt):
     q_gt = np.array(labels['pose'])
     t_gt = np.array(labels['translation'])
     # image_points = np.array(labels['keypoints'])
-    image_points = np.array(labels['kpts_preds'])
+    image_points = np.array(labels['keypoints'])
 
     q_pr, t_pr = pnp(sat_model, image_points, cmt)
 

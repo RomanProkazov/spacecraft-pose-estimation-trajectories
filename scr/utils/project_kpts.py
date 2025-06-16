@@ -79,7 +79,7 @@ def visualize_kpts_from_img(image_path,
 
     image_points = np.array(labels['keypoints']).reshape(-1, 2)
     print(image_points)
-    image_points = image_points[:,[1, 0]]*np.array([3072, 2048]) # for 3072px images 
+    image_points = image_points # for 3072px images 
     print(image_points)
 
     plt.imshow(image, cmap='gray')
@@ -98,14 +98,14 @@ def project_kpts_from_image(image_path,
 
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, cmt = np.array(data['sat_model'])*(-1), np.array(data['camera_matrix']) 
-   
+    sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix']) 
+    sat_model[:, 0] *= -1
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     labels = annotations[idx]
 
     # Ground truth data
     q_gt =np.array(labels['pose'])
-    t_gt = labels['translation']
+    t_gt = np.array(labels['translation'])*400000
 
     distCoeffs = np.zeros((5, 1), dtype=np.float32)
     # distCoeffs = np.array(([ -0.029736043469149088, -0.0022844622995838583, -0.001739466580238918, -0.0006001510606988042, 0.07342321343596342
@@ -122,7 +122,8 @@ if __name__ == "__main__":
     camera_sat_model = config.SAT_CAM_JSON
     image_folder_path = Path(config.IMG_DIR)
     json_path = config.LABELS_JSON
-    # image_path = "/home/roman/Desktop/LUXEMBOURG PROJECT/blender-related/files/data/images/blender_kpts_test/img_0160.jpg"
+    json_path = "/home/roman/spacecraft-pose-estimation-trajectories/data/labels/labels_sat_1280px_20kimgs_leo_2.json"
+    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data/images/image_00900.jpg"
 
 
     # old data
@@ -135,10 +136,10 @@ if __name__ == "__main__":
     # camera_sat_model = "../../data_512px_5kimgs/labels/cam_sat.json"
 
     
-    project_kpts_from_img_folder(image_folder_path=image_folder_path,
-                                   json_data_path=json_path,
-                                   camera_sat_json=camera_sat_model,
-                                   idx=199)
+    # project_kpts_from_img_folder(image_folder_path=image_folder_path,
+    #                                json_data_path=json_path,
+    #                                camera_sat_json=camera_sat_model,
+    #                                idx=199)
 
     # visualize_kpts_from_img_folder(image_folder_path=image_folder_path,
     #                                json_data_path=json_path,
@@ -148,9 +149,9 @@ if __name__ == "__main__":
     # project_kpts_from_image(image_path,
     #                             json_data_path=json_path,
     #                             camera_sat_json=camera_sat_model,
-    #                             idx=4047)
+    #                             idx=899)
 
-    # visualize_kpts_from_img(image_path=image_path,
-    #                             json_data_path=json_path,
-    #                             camera_sat_json=camera_sat_model,
-    #                             idx=255)
+    visualize_kpts_from_img(image_path=image_path,
+                                json_data_path=json_path,
+                                camera_sat_json=camera_sat_model,
+                                idx=899)
