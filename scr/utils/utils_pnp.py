@@ -1,10 +1,5 @@
 from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
-from pathlib import Path
-from tqdm import tqdm
 import numpy as np
-import random
-import json
 import cv2
 
 
@@ -62,13 +57,7 @@ def pnp(points_3D, points_2D, cameraMatrix, distCoeffs=None, rvec=None, tvec=Non
     if distCoeffs is None:
         distCoeffs = np.zeros((5, 1), dtype=np.float32)
 
-    #assert points_3D.shape[0] == points_2D.shape[0], 'points 3D and points 2D must have same number of vertices'
-
-    # print(points_3D)
-    # print(points_3D.shape)
     points_3D = np.ascontiguousarray(points_3D).reshape((-1,1,3))
-    # print(points_3D)
-    # print(points_3D.shape)
     points_2D = np.ascontiguousarray(points_2D).reshape((-1,1,2))
 
     # R_exp - is rotaion in Euler angles
@@ -125,8 +114,8 @@ def quat2dcm(q):
 def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoints):
     ''' Project keypoints.
     Arguments:
-        q_vbs2tango:  (4,) numpy.ndarray - unit quaternion from VBS to Tango frame
-        r_Vo2To_vbs:  (3,) numpy.ndarray - position vector from VBS to Tango in VBS frame (m)
+        q_vbs2tango:  (4,) numpy.ndarray - unit quaternion from VBS to object frame
+        r_Vo2To_vbs:  (3,) numpy.ndarray - position vector from VBS to object in VBS frame (m)
         cameraMatrix: (3,3) numpy.ndarray - camera intrinsics matrix
         distCoeffs:   (5,) numpy.ndarray - camera distortion coefficients in OpenCV convention
         keypoints:    (3,N) or (N,3) numpy.ndarray - 3D keypoint locations (m)
@@ -158,101 +147,21 @@ def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoi
 
     return points2D
 
-# PnP with the metrics across all dataset
-def pnp_with_metrics(): 
-    with open("st_with_cmtx.json", 'r') as json_file:
-        data = json.load(json_file)
-        sat_model, cmt = np.array(data['sat_model']), np.array(data['camera_matrix'])
-        dist = np.array(data['dist']).astype(np.float32)
-
-    with open('../not_processed_data/train/meta_keypoints.json', 'r') as f:
-        annotations = json.load(f)
-    
-    image_folder_path = Path("../not_processed_data/train/images")
-    image_path_list = [image for image in sorted(image_folder_path.rglob('*.jpg'))]
-    num_images = len(image_path_list)
-    keypoints_speed_list = []
-    t_error_sum, r_error_sum, speed_score_sum  = 0, 0, 0
-   
-    for i, image in tqdm(enumerate(image_path_list),
-                        total=num_images,
-                        desc="Images processed",
-                        ncols=80):
-
-        # Chose image and corresponding annotations
-        image = cv2.imread(str(image))
-        labels = annotations[i]
-
-        # Ground truth data
-        q_gt =np.array(labels['pose'])
-        t_gt = np.array(labels['translation'])
-
-        distCoeffs = np.zeros((5, 1), dtype=np.float32)
-        image_points = project_keypoints(q_gt, t_gt, cmt, distCoeffs, sat_model)
-        image_points = image_points.T # normalization
-        
-        # Define keypoints list
-        labels['keypoints'] = image_points.tolist()
-
-        keypoints_speed_list.append(image_points.tolist())
-
-        # Call pnp function
-        q_pr, t_pr = pnp(sat_model, image_points, cmt)
-
-        # Check translation error
-        t_error = error_translation(t_pr, t_gt)
-    
-        # check rotation error
-        r_error = error_orientation(q_pr, q_gt)
-
-        print(f"Translation error (m): {t_error:.3f}")
-        print(f"Rotation error (deg): {r_error:.3f}")
-        # Chek speed error
-        # speed_score_1 = speed_score(t_pr, q_pr, t_gt, q_gt)
-
-        # Mean arrors
-        t_error_sum += t_error
-        r_error_sum += r_error
-        
-        
-        # speed_score_sum += speed_score_1
-        # if i > 10:
-        #     break
-
-    mt_error = t_error_sum / len(image_path_list)
-    mr_error = r_error_sum / len(image_path_list)
-    # m_speed_score = speed_score_sum / len(image_path_list)
-
-    # print(f'Mean translation error: {mt_error:.3f}')
-    # print(f"Mean rotation error: {mr_error:.3f}")
-    # print(f'SPEED score: {m_speed_score}')
-
-    with open('../not_processed_data/train/meta_keypoints_new.json', 'w') as json_file:
-        json.dump(annotations, json_file, indent=4)
 
 def do_ransac_lm(objectPoints, keypoints, cameraMatrix):
     distCoeffs = np.zeros((5, 1), dtype=np.float32)
-    # start=time.time()
     success, R_vec, t_vec, inliers = cv2.solvePnPRansac(objectPoints,
                                                         keypoints,
                                                         cameraMatrix,
                                                         distCoeffs,
                                                         flags=cv2.SOLVEPNP_EPNP,
-                                                        reprojectionError=5)
-    # PnP_time[i,:]=time.time()-start
+                                                        reprojectionError=5
+                                                        )
 
+    R_vec, t_vec=cv2.solvePnPRefineLM(objectPoints[inliers,:],keypoints[inliers,:],cameraMatrix,distCoeffs,R_vec, t_vec)
     Rotation_matrix, _ = cv2.Rodrigues(R_vec)
     scipy_rotation_matrix=R.from_matrix(Rotation_matrix)
-    quat=scipy_rotation_matrix.as_quat()
-
-    # if success==True:
-    #     export_PnP_success[i,:]=success
-    #     export_inliers_nr[i,:]=len(inliers)
-
-    # export_position[i,:]=t_vec.transpose()
-    # export_quat[i,:]=quat
-
-    # start=time.time()
-    R_vec, t_vec=cv2.solvePnPRefineLM(objectPoints[inliers,:],keypoints[inliers,:],cameraMatrix,distCoeffs,R_vec, t_vec)
-    # LM_time[i,:]=time.time()-start
-    return R_vec, t_vec
+    q_pr=scipy_rotation_matrix.as_quat()
+    q_pr = q_pr[[3,0,1,2]]
+    
+    return  q_pr, t_vec

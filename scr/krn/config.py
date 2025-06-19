@@ -23,13 +23,14 @@ KRN_MODEL_PATH = "../../trained_models/krn-dir/b0_4kpts_640px_v1.pth.tar"
 ODN_MODEL_PATH = "../../trained_models/odn-dir/best_odn_640px_v1.pt"
 SEG_MODEL_PATH = "../../runs/segment/train5/weights/best.pt"
 
-IMG_DIR = "../../data/images"
+IMG_DIR = "../../data/images_render"
 IMG_DIR_MARKER = "../../data/images_last_300_marker"
 TEST_IMG_DIR = "../../data_640px/images"
 
 SAT_CAM_JSON = "../../data/labels/cam_sat.json"
-LABELS_JSON = "../../data/labels/labels_sat_1280px_20kimgs_leo_2.json"
-LABELS_JSON_PREDS = "../../data_640px/labels/labels_sat_5kimgs_preds.json"
+LABELS_BLENDER_JSON = "../../data/labels/meta_keypoints.json"
+LABELS_JSON = "../../data/labels/labels_sat_1280px_20kimgs_leo_no_earth_v6.json"
+LABELS_JSON_PREDS = "../../data/labels/labels_sat_1280px_20kimgs_leo_no_earth_with_preds_v6.json"
 
 INPUT_VIDEO_PATH = "../../videos/3072_2048/test/trajectories_videos/trajectory_1.mp4"
 OUTPUT_VIDEO_PATH_SEG = "../../videos/3072_2048/test/seg_videos/seg_trajectory1.mp4"
