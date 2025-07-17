@@ -18,6 +18,7 @@
 *.onnx
 *.trt
 *.zip
+*.pdf
 
 
 data_512px
@@ -26,6 +27,7 @@ data_splitted
 data_platform
 runs
 videos
+env_cv42
 
 !sc_odn_config.yaml
 !sc_seg_config.yaml

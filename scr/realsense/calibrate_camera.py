@@ -4,25 +4,9 @@ from matplotlib import pyplot as plt
 from pathlib import Path
 import json
 
-image_dir = Path('checkerboard_images')
-output_json = Path('camera_calibration.json')
-img_names = [image for image in image_dir.glob('*.png')]
-# img_names = sorted(img_names, key=lambda x: int(x.stem.split('_')[-1]))
-img_names = sorted(img_names)
-
-square_size = 25  # mm
-pattern_size = (10, 7)  # number of inner corners
-
-# Building 3D points
-indices = np.indices(pattern_size, dtype=np.float32)
-indices *= square_size
-pattern_points = np.zeros([pattern_size[0] * pattern_size[1], 3], np.float32)
-coords_3D = indices.T.reshape(-1, 2)
-pattern_points[:, :2] = coords_3D
-
 
 def processImage(fn):
-    print('processing {}'.format(fn))
+    print(f'processing {fn}')
     img = cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
 
     if img is None:
@@ -38,66 +22,77 @@ def processImage(fn):
         print('chessboard not found')
         return None
 
-    print('           %s... OK' % fn)
+    print(f"           {fn}... OK")
     return corners.reshape(-1, 2)
 
 
-# Building 2D-3D correspondences
-chessboards = [processImage(str(fn)) for fn in img_names]
-chessboards = [x for x in chessboards if x is not None]
+def calculate_reprojection_error(obj_points, img_points, rvecs, tvecs, camera_matrix, dist_coefs):
+    total_error = 0
+    for i in range(len(obj_points)):
+        imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coefs)
+        imgpoints2 = imgpoints2.reshape(-1, 2)
+        # plt.imshow(cv2.imread(img_names[i]))   
+        # # plt.scatter(imgpoints2[:, 0], imgpoints2[:, 1], s=10)
+        # plt.scatter(img_points[i][:, 0], img_points[i][:, 1], s=10)
+        # plt.show()
+        error = cv2.norm(img_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+        print(f"Image {i} {img_names[i].name}: {error:.2f} px")
+        total_error += error
 
-obj_points = []  # 3D points
-img_points = []  # 2D points
+    return total_error / len(obj_points)
 
-for corners in chessboards:
-    img_points.append(corners)
-    obj_points.append(pattern_points)
 
-# print(f"object points: {obj_points}")
+if __name__ == "__main__":
 
-h, w = cv2.imread(img_names[0], cv2.IMREAD_GRAYSCALE).shape[:2]
-print(f"Image size: {w}x{h}")
+    image_dir = Path('checkerboard_images_1280_720')
+    output_json = Path('camera_calibration.json')
+    img_names = sorted([image for image in image_dir.glob('*.png')])
 
-# Calibrating Camera
-rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
+    square_size = 25  # mm
+    pattern_size = (10, 7)  # number of inner corners
 
-# Calculate reprojection error
-mean_error = 0
-for i in range(len(obj_points)):
-    imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coefs)
-    imgpoints2 = imgpoints2.reshape(-1, 2)  # Ensure imgpoints2 has shape (N, 2)
-    #plot projection
-    # plt.imshow(cv2.imread(img_names[i]))   
-    # plt.scatter(imgpoints2[:, 0], imgpoints2[:, 1], s=10)
-    # plt.scatter(img_points[i][:, 0], img_points[i][:, 1], s=10)
-    # plt.show()
-    # Calculate reprojection error
-    error = cv2.norm(img_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
-    mean_error += error
+    # Building 3D points
+    indices = np.indices(pattern_size, dtype=np.float32)
+    indices *= square_size
+    pattern_points = np.zeros([pattern_size[0] * pattern_size[1], 3], np.float32)
+    coords_3D = indices.T.reshape(-1, 2)
+    pattern_points[:, :2] = coords_3D
 
-for i in range(len(obj_points)):
-    imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coefs)
-    
-    error = cv2.norm(img_points[i], imgpoints2.reshape(-1, 2), cv2.NORM_L2) / len(imgpoints2)
-    print(f"Image {i} {img_names[i].name}: {error:.2f} px")
+    # Building 2D-3D correspondences
+    chessboards = [processImage(str(fn)) for fn in img_names]
+    chessboards = [x for x in chessboards if x is not None]
 
-print("Total reprojection error: {}".format(mean_error / len(obj_points)))
+    obj_points = []  # 3D points
+    img_points = []  # 2D points
 
-print('RMS:', rms)
-print('Camera matrix:\n', camera_matrix)
-print('Distortion coefficients:\n', dist_coefs)
+    for corners in chessboards:
+        img_points.append(corners)
+        obj_points.append(pattern_points)
 
-# Save camera matrix and distortion coefficients to a JSON file
-calibration_data = {
-    "camera_matrix": camera_matrix.tolist(),
-    "distortion_coefficients": dist_coefs.tolist(),
-    "rvecs": [rvec.tolist() for rvec in rvecs],
-    "tvecs": [tvec.tolist() for tvec in tvecs],
-    "reprojection_error": mean_error / len(obj_points),
-    "rms": rms
-}
+    h, w = cv2.imread(img_names[0], cv2.IMREAD_GRAYSCALE).shape[:2]
+    print(f"Image size: {w}x{h}")
 
-with open(output_json, 'w') as f:
-    json.dump(calibration_data, f, indent=4)
+    # Calibrating Camera
+    rms, camera_matrix, dist_coefs, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
+    my_mean_error = calculate_reprojection_error(
+        obj_points, img_points, rvecs, tvecs, camera_matrix, dist_coefs
+    )
 
-print(f"Calibration data saved to {output_json}")
+    # Save camera matrix and distortion coefficients to a JSON file
+    calibration_data = {
+        "camera_matrix": camera_matrix.tolist(),
+        "distortion_coefficients": dist_coefs.tolist(),
+        "rvecs": [rvec.tolist() for rvec in rvecs],
+        "tvecs": [tvec.tolist() for tvec in tvecs],
+        "rms": rms,
+        "mean_reprojection_error": my_mean_error
+    }
+
+    with open(output_json, 'w') as f:
+        json.dump(calibration_data, f, indent=4)
+
+    print(f"Calibration data saved to {output_json}")
+    print('RMS:', rms)
+    print('Mean reprojection error:', my_mean_error)
+    print('Camera matrix:\n', camera_matrix)
+    print('Distortion coefficients:\n', dist_coefs)

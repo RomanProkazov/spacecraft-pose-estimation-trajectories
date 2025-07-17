@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 # Load the images
-image_dir = Path('checkerboard_images')
+image_dir = Path('checkerboard_images_1280_720')
 img_names = [image for image in image_dir.glob('*.png')]
 img_names = sorted(img_names) # , key=lambda x: int(x.stem.split('_')[-1]))
 
@@ -22,19 +22,18 @@ _3d_corners = np.float32([[0,0,0], [0,100,0], [100,100,0], [100,0,0],
                            [0,0,-100],[0,100,-100],[100,100,-100],[100,0,-100]])
 
 
-image_index=3
+image_index=-2
 cube_corners_2d,_ = cv2.projectPoints(_3d_corners,rvecs[image_index],tvecs[image_index],camera_matrix,dist_coefs) 
-#the underscore allows to discard the second output parameter (see doc)
 cube_corners_2d = np.round(cube_corners_2d).astype(np.int64)
-print(cube_corners_2d,0) #the output consists in 8 2-dimensional points
+print(cube_corners_2d,0) 
 
 
-img=cv2.imread(img_names[image_index]) #load the correct image
+img=cv2.imread(img_names[image_index]) 
 
 red=(0,0,255) #red (in BGR)
 blue=(255,0,0) #blue (in BGR)
 green=(0,255,0) #green (in BGR)
-line_width=1
+line_width=2
 
 #first draw the base in red
 cv2.line(img, tuple(cube_corners_2d[0][0]), tuple(cube_corners_2d[1][0]),red,line_width)

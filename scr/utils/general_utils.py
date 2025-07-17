@@ -16,10 +16,10 @@ def blender_to_opencv_coord(blender_points):
     return opencv_points
 
 
-def load_camera_matrix_sat_model(camera_sat_json):
+def load_camera_matrix_sat_model(camera_sat_json, object='sat_model'):
     with open(camera_sat_json, 'r') as json_file:
         data = json.load(json_file)
-    sat_model, camera_matrix = np.array(data['sat_model']), np.array(data['camera_matrix']) 
+    sat_model, camera_matrix = np.array(data[object]), np.array(data['camera_matrix']) 
     sat_model_opencv = blender_to_opencv_coord(sat_model)
     return camera_matrix, sat_model_opencv
 
