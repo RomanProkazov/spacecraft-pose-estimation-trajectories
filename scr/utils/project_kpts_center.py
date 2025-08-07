@@ -4,6 +4,7 @@ from cv2 import aruco
 import numpy as np
 import json
 from scipy.spatial.transform import Rotation as R
+import tf.transformations 
 
 
 
@@ -18,6 +19,13 @@ def quaternion_to_rvec(quat):
     rotation = R.from_quat(np.roll(quat, -1))  # Convert [w, x, y, z] to [x, y, z, w]
     rot_matrix = rotation.as_matrix()
     rvec, _ = cv2.Rodrigues(rot_matrix)
+    return rvec
+
+def quat_tf_to_rvec(quat):
+    quat_xyzw = np.roll(quat, -1)
+    rot_matrix = tf.transformations.quaternion_matrix(quat_xyzw)
+    print(rot_matrix)
+    rvec, _ = cv2.Rodrigues(rot_matrix[:3, :3])
     return rvec
 
 
@@ -52,8 +60,8 @@ def project_kpts_from_image(image_path,
     else:
         distCoeffs = np.zeros((5, 1), dtype=np.float32)
 
-    r_vec = quaternion_to_rvec(q_gt)
-    r_vec = quaternion_to_rvec(q_gt)
+    # r_vec = quaternion_to_rvec(q_gt)
+    r_vec = quat_tf_to_rvec(q_gt)
     image_points, _ = cv2.projectPoints(sat_model, r_vec, t_gt, cmt, distCoeffs)
     image_points = image_points.reshape(-1, 2)
     # print(f'GT image_points: {image_points}')

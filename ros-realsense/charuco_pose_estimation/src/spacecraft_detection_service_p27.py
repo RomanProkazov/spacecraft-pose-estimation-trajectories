@@ -93,10 +93,8 @@ def process_image():
         annotated_image = cv_image.copy()
         
         # Project keypoints
-        # kpts = project_keypoints(annotated_image, latest_pose)
+        kpts = project_keypoints(annotated_image, latest_pose)
         quat_xyzw, tvec = extract_ros_pose(latest_pose)
-        kpts = project_keypoints_math(quat_xyzw, tvec, camera_matrix, dist_coeffs, sat_model)
-        kpts = kpts.T
         for point in kpts:
             x, y = int(round(point[0])), int(round(point[1]))
             cv2.circle(annotated_image, (x, y), radius=5, color=(0, 255, 0), thickness=-1)
