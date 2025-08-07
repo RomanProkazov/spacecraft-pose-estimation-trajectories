@@ -23,7 +23,7 @@ KRN_MODEL_PATH = "../../trained_models/krn-dir/b0_4kpts_640px_v1.pth.tar"
 ODN_MODEL_PATH = "../../trained_models/odn-dir/best_odn_640px_v1.pt"
 SEG_MODEL_PATH = "../../runs/segment/train5/weights/best.pt"
 
-IMG_DIR = "../../data_640px/images"
+IMG_DIR = "../../data/images"
 IMG_DIR_MARKER = "../../data/images_last_300_marker"
 TEST_IMG_DIR = "../../data_640px/images"
 

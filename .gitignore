@@ -33,6 +33,9 @@ env_cv42
 !sc_seg_config.yaml
 !CMakeLists.txt
 !/ros-realsense/realsense_ros_commands.txt
+!/ros-realsense/charuco_pose_estimation/realsense_ros_commands.txt
+!/ros-realsense/charuco_pose_estimation/package.xml
+!/ros-realsense/charuco_pose_estimation/cam_sat.json
 # # Except the important_folder and its contents
 # !/ultralytics_folder/od_seg_pos.ipynb
 # !/pose_pnp/st_with_cmtx_env.json

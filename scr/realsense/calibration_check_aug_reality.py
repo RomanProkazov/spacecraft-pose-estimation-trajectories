@@ -6,14 +6,14 @@ from pathlib import Path
 
 
 # Load the images
-image_dir = Path('checkerboard_images_1280_720')
+image_dir = Path('charuco_1280_720_cv42')
 img_names = [image for image in image_dir.glob('*.png')]
 img_names = sorted(img_names) # , key=lambda x: int(x.stem.split('_')[-1]))
 
-with open('camera_calibration.json') as f:
+with open('camera_calibration_1280_720.json') as f:
     data = json.load(f)
 camera_matrix = np.array(data['camera_matrix'])
-dist_coefs = np.array(data['distortion_coefficients'])
+dist_coefs = np.array(data['dist'])
 rvecs = np.array(data['rvecs'])
 tvecs = np.array(data['tvecs'])
 
@@ -22,7 +22,7 @@ _3d_corners = np.float32([[0,0,0], [0,100,0], [100,100,0], [100,0,0],
                            [0,0,-100],[0,100,-100],[100,100,-100],[100,0,-100]])
 
 
-image_index=-2
+image_index=1
 cube_corners_2d,_ = cv2.projectPoints(_3d_corners,rvecs[image_index],tvecs[image_index],camera_matrix,dist_coefs) 
 cube_corners_2d = np.round(cube_corners_2d).astype(np.int64)
 print(cube_corners_2d,0) 

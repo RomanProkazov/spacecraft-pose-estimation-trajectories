@@ -1,0 +1,11 @@
+# Request
+std_msgs/Bool process_latest_image
+
+---
+# Response
+# geometry_msgs/Vector3 rvec
+# geometry_msgs/Vector3 tvec
+# std_msgs/Float64 distance
+bool success
+string message
+geometry_msgs/PoseStamped pose_stamped

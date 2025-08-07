@@ -22,6 +22,7 @@ def project_kpts_from_img_folder(image_folder_path,
                                  idx=0):
                                 
     image_path_list = load_images(image_folder_path)
+  
     annotations = load_labels(json_data_path)
     cmt, sat_model = load_camera_matrix_sat_model(camera_sat_json)
  
@@ -50,7 +51,7 @@ def project_kpts_from_image(image_path,
                                  unit_scale=1,
                                  visualize=False,
                                  visualize_points_name='keypoints',
-                                 idx=0):                           
+                                 idx=998):                           
     
     annotations = load_labels(json_data_path)
     cmt, sat_model = load_camera_matrix_sat_model(camera_sat_json)
@@ -78,13 +79,13 @@ if __name__ == "__main__":
     camera_sat_model = config.SAT_CAM_JSON
     image_folder_path = Path(config.IMG_DIR)
     json_path = config.LABELS_JSON
-    image_path = "../../data/images_render/image_00904.jpg"
+    image_path = "../../data/images/image_00000.jpg"
 
     project_kpts_from_img_folder(image_folder_path=image_folder_path,
                                    json_data_path=json_path,
                                    camera_sat_json=camera_sat_model, unit_scale=1, visualize=True,
                                    visualize_points_name='keypoints',
-                                   idx=3000)
+                                   idx=1999)
 
 
     # project_kpts_from_image(image_path,

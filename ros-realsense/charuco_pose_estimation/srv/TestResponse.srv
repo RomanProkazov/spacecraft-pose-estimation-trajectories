@@ -1,0 +1,8 @@
+# Request
+std_msgs/Bool test_request
+
+---
+# Response
+bool success
+string message
+string test_data

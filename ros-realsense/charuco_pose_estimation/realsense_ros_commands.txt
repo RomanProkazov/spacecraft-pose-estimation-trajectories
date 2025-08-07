@@ -1,0 +1,37 @@
+######################### Custom guide on realsense camera usage with ros ##############################
+
+# launch camera
+roslaunch realsense2_camera rs_camera.launch
+
+# launch camera with custom resolution
+roslaunch realsense2_camera rs_camera.launch color_width:=640 color_height:=480 depth_width:=640 depth_height:=480 color_fps:=30 depth_fps:=30
+
+# see camera carachteristics (resolution and factory intrinsics)
+rostopic echo /camera/color/camera_info
+
+# stream camera and save images
+rosrun  realsenseros_pkg image_viewer_nfr.py 
+
+# run ros-realsense inside of docker container (Container is build from docker image, using custom Dockerfile) 
+docker run --name ros_realsense -it -v /home/roman/spacecraft-pose-estimation-trajectories:/SET empty_ros:latest
+
+# call service to take raw image data, and poses to project keypoints onto the object 
+rosservice call /estimate_charuco_pose "{process_latest_image: {data: true}}"
+
+# Call the service to save an image
+rosservice call /save_image_service "process_latest_image:
+  data: true"
+
+# View the annotated image
+rosrun image_view image_view image:=/annotated_image
+
+# run the keyppoint projection node
+rosrun  charuc_pose_estimation spacecraft_detection_service.py
+
+# call service to take raw image data, and poses to project keypoints onto the object 
+rosservice call /detect_spacecraft "{process_image: {data: true}}"
+
+
+
+
+

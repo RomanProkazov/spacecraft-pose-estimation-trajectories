@@ -8,7 +8,7 @@ import sys
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
-def load_camera_parameters(camera_matrix_path, dist=False):
+def load_camera_parameters(camera_matrix_path, dist=True):
     """Load camera calibration data from JSON file"""
     with open(camera_matrix_path, 'r') as f:
         cam_dist = json.load(f)
@@ -43,8 +43,66 @@ def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
         trash.append(nada)
     return rvecs, tvecs, trash
 
+def draw_satellite_model(image, rvec, tvec, camera_matrix, dist_coeffs):
+    """Draw the satellite model based on the given pose"""
+    # Define the satellite model points (in meters)
+    sat_model = np.float32([
+        [-0.15, -0.15, -0.30],
+        [-0.15,  0.15, -0.30],
+        [ 0.15,  0.15, -0.30],
+        [ 0.15, -0.15, -0.30],
+        [-0.15, -0.15, 0.0],
+        [-0.15,  0.15, 0.0],
+        [ 0.15,  0.15, 0.0],
+        [ 0.15, -0.15, 0.0],
+        [-0.649869, -0.150108,  -0.154868],
+        [-0.649869,  0.153118,  -0.154868],
+        [ 0.649874,  0.153089,  -0.154842],
+        [ 0.649874, -0.150088,  -0.154841],
+        [ 0.04   ,  0.04    , 0],
+        [ 0.04   , -0.04    , 0],
+        [-0.04   , -0.04    , 0],
+        [-0.04   ,  0.04    , 0]
+    ])
+
+    # Project the 3D points to 2D
+    imgpts, _ = cv2.projectPoints(sat_model, rvec, tvec, camera_matrix, dist_coeffs)
+    imgpts = np.round(imgpts).astype(np.int32)
+    
+    # Define colors
+    red = (0, 0, 255)    # BGR
+    green = (0, 255, 0)  # BGR
+    blue = (255, 0, 0)   # BGR
+    yellow = (0, 255, 255) # BGR
+    line_width = 2
+
+    # Draw main body (cube)
+    # Bottom face
+    for i in range(4):
+        cv2.line(image, tuple(imgpts[i][0]), tuple(imgpts[(i+1)%4][0]), red, line_width)
+    # Top face
+    for i in range(4):
+        cv2.line(image, tuple(imgpts[i+4][0]), tuple(imgpts[((i+1)%4)+4][0]), red, line_width)
+    # Pillars
+    for i in range(4):
+        cv2.line(image, tuple(imgpts[i][0]), tuple(imgpts[i+4][0]), red, line_width)
+
+    # Draw solar panels
+    cv2.line(image, tuple(imgpts[8][0]), tuple(imgpts[9][0]), blue, line_width)
+    cv2.line(image, tuple(imgpts[9][0]), tuple(imgpts[10][0]), blue, line_width)
+    cv2.line(image, tuple(imgpts[10][0]), tuple(imgpts[11][0]), blue, line_width)
+    cv2.line(image, tuple(imgpts[11][0]), tuple(imgpts[8][0]), blue, line_width)
+
+    # # Draw small cube on top
+    # for i in range(4):
+    #     cv2.line(image, tuple(imgpts[i+12][0]), tuple(imgpts[((i+1)%4)+12][0]), green, line_width)
+    # for i in range(4):
+    #     cv2.line(image, tuple(imgpts[i][0]), tuple(imgpts[i+12][0]), green, line_width)
+
+    return image
+
 def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_length):
-    """Estimate pose of ArUco markers with top-left corner info display"""
+    """Estimate pose of ArUco markers with satellite model projection"""
     image = cv2.imread(image_path)
     if image is None:
         print(f"Error: Unable to load image from {image_path}")
@@ -61,37 +119,33 @@ def estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_len
             corners, marker_length, camera_matrix, distortion_coefficients
         )
 
-        # Initialize top-left corner text
-        info_text = []
-        
         for i in range(len(ids)):
-            # Draw axes and marker ID
+            # Draw axes
             image = cv2.drawFrameAxes(
                 image, camera_matrix, distortion_coefficients,
                 rvecs[i], tvecs[i], marker_length * 0.5
             )
+            
+            # Draw satellite model
+            image = draw_satellite_model(image, rvecs[i], tvecs[i], 
+                                       camera_matrix, distortion_coefficients)
             
             # Put marker ID near the marker
             center = np.mean(corners[i][0], axis=0).astype(int)
             cv2.putText(image, f"ID:{ids[i][0]}", tuple(center),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
             
-            # Collect info for top-left display
+            # Print pose information
             distance = np.linalg.norm(tvecs[i])
+            print(f'Aruco Marker ID {ids[i][0]}')
+            print(f'Rvec: {rvecs[i].flatten()}')
+            print(f'Tvec: {tvecs[i].flatten()}')
+            print(f'Distance: {distance:.2f} m\n')
 
-            print(f'Aruco Marker')
-            print(f'Rvec[{i}]: {rvecs[i].flatten()}')
-            print(f'Tvec[{i}]: {tvecs[i].flatten()}')
-            print(f'Distance[{i}]: {distance:.2f} m')
-
-    
     return image
 
 if __name__ == "__main__":
-    # image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data/images/image_01577.jpg"
-    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_real/lux_sat_data_real_v1/frame_dark_0224.jpg"
-    #image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data/images_last_300_marker/image_01920.jpg"
-    # camera_matrix_path = "/home/roman/spacecraft-pose-estimation-trajectories/data/labels/cam_sat.json"  
+    image_path = "/home/roman/spacecraft-pose-estimation-trajectories/data_real/lux_sat_data_real_v4/frame_bright_0203.jpg"
     camera_matrix_path = "/home/roman/spacecraft-pose-estimation-trajectories/scr/realsense/camera_calibration_1280_720.json"  
     marker_length = 0.08  # Physical size of marker in meters
 
@@ -99,7 +153,7 @@ if __name__ == "__main__":
     result_image = estimate_pose(image_path, camera_matrix, distortion_coefficients, marker_length)
     
     if result_image is not None:
-        cv2.imwrite("images/aruco_marker_pose.png", result_image)
-        cv2.imshow("ArUco Marker Pose Estimation", result_image)
+        cv2.imwrite("images/aruco_marker_pose_with_model.png", result_image)
+        cv2.imshow("ArUco Marker Pose Estimation with Satellite Model", result_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()

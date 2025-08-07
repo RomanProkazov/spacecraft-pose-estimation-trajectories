@@ -1,0 +1,8 @@
+# Request
+std_msgs/Bool save_image
+
+---
+# Response
+bool success
+string message
+string image_path   

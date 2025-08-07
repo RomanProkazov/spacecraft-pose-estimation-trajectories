@@ -1,0 +1,10 @@
+# Request
+std_msgs/Bool process_image
+
+---
+# Response
+bool success
+string message
+geometry_msgs/PoseStamped pose_stamped
+string image_path
+string json_path

@@ -111,11 +111,11 @@ def quat2dcm(q):
 
     return dcm
 
-def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoints):
+def project_keypoints(quat_wxyz, translation, cameraMatrix, distCoeffs, keypoints):
     ''' Project keypoints.
     Arguments:
-        q_vbs2tango:  (4,) numpy.ndarray - unit quaternion from VBS to object frame
-        r_Vo2To_vbs:  (3,) numpy.ndarray - position vector from VBS to object in VBS frame (m)
+        quat_wxyz:  (4,) numpy.ndarray - unit quaternion from Camera to object frame
+        translation:  (3,) numpy.ndarray - position vector from Camera to object in Camera frame (m)
         cameraMatrix: (3,3) numpy.ndarray - camera intrinsics matrix
         distCoeffs:   (5,) numpy.ndarray - camera distortion coefficients in OpenCV convention
         keypoints:    (3,N) or (N,3) numpy.ndarray - 3D keypoint locations (m)
@@ -130,8 +130,8 @@ def project_keypoints(q_vbs2tango, r_Vo2To_vbs, cameraMatrix, distCoeffs, keypoi
     keypoints = np.vstack((keypoints, np.ones((1, keypoints.shape[1]))))
 
     # transformation to image frame
-    pose_mat = np.hstack((np.transpose(quat2dcm(q_vbs2tango)),
-                          np.expand_dims(r_Vo2To_vbs, 1)))
+    pose_mat = np.hstack((np.transpose(quat2dcm(quat_wxyz)),
+                          np.expand_dims(translation, 1)))
     xyz      = np.dot(pose_mat, keypoints) # [3 x N]
     x0, y0   = xyz[0,:] / xyz[2,:], xyz[1,:] / xyz[2,:] # [1 x N] each
 

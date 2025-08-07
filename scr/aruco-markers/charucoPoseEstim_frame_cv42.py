@@ -15,16 +15,19 @@ SQUARES_VERTICALLY = 7  # Number of squares vertically
 SQUARES_HORIZONTALLY = 5  # Number of squares horizontally
 SQUARE_LENGTH = 0.037  # 37mm in meters
 MARKER_LENGTH = 0.018  # 18mm in meters
-CALIBRATION_JSON = "/home/roman/spacecraft-pose-estimation-trajectories/scr/realsense/camera_calibration_1280_720.json"
-IMAGE_PATH = "/home/roman/spacecraft-pose-estimation-trajectories/scr/realsense/charuco_1280_720_cv42/color_arucoboard_0003.png"
+CALIBRATION_JSON = "/home/roman/spacecraft-pose-estimation-trajectories/data/labels/cam_sat.json"
+IMAGE_PATH = "/home/roman/spacecraft-pose-estimation-trajectories/image_00141.jpg"
 # ------------------------------
 
-def load_camera_parameters(calibration_path):
+def load_camera_parameters(calibration_path, dist=False):
     """Load camera calibration data from JSON file"""
     with open(calibration_path) as f:
         data = json.load(f)
     camera_matrix = np.array(data['camera_matrix'], dtype=np.float32)
-    dist_coeffs = np.array(data['dist'], dtype=np.float32)
+    if dist:
+        dist_coeffs = np.array(camera_matrix['dist'], dtype=np.float32)
+    else:
+        dist_coeffs = np.zeros((5, 1), dtype=np.float32)
     return camera_matrix, dist_coeffs
 
 

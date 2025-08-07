@@ -12,8 +12,13 @@ import json
 ARUCO_DICT = cv2.aruco.DICT_6X6_250
 SQUARES_VERTICALLY = 7        # Number of squares vertically
 SQUARES_HORIZONTALLY = 5      # Number of squares horizontally
-SQUARE_LENGTH = 0.0362        # 11.5mm in meters (must match printed board)
-MARKER_LENGTH = 0.0184         # 8mm in meters (must match printed board)
+# A4
+#SQUARE_LENGTH = 0.0362        # 11.5mm in meters (must match printed board)
+#MARKER_LENGTH = 0.0184         # 8mm in meters (must match printed board)
+
+# A3
+SQUARE_LENGTH = 0.0523        # 11.5mm in meters (must match printed board)
+MARKER_LENGTH = 0.026         # 8mm in meters (must match printed board)
 CALIBRATION_JSON = "/home/roman/spacecraft-pose-estimation-trajectories/scr/realsense/camera_calibration_1280_720.json"
 
 # ====== REALSENSE SETUP ======
@@ -51,9 +56,10 @@ def process_frame(frame, board, dictionary, parameters, camera_matrix, dist_coef
     # Estimate pose
     success, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(
         charuco_corners, charuco_ids, board,
-        camera_matrix, dist_coeffs, None, None)
+        camera_matrix, dist_coeffs, None, None)     
     
     if not success:
+        print("Pose estimation failed: ChArUco corner interpolation failed")
         output = cv2.aruco.drawDetectedMarkers(frame.copy(), corners, ids)
         return output, None, None
     
@@ -131,6 +137,7 @@ def main():
                 # print(xyz_angles)
                 # print(f'XYZ angles: {xyz_angles.flatten()}')
                 print(f'Euler: {euler.flatten()}')
+                print(f"dist: {tvec.flatten()[:3].round(3)}m")
             
             # Display info if pose found
             # if rvec is not None:

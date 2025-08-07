@@ -5,12 +5,12 @@ import os
 import cv2
 
 # Configuration
-input_folder = "../../data_real/lux_sat_data_real_v1"
-output_folder = "../../data_real/lux_sat_data_real_v1_nobck"
+input_folder = "../../data_real/lux_sat_data_real_v4"
+output_folder = "../../data_real/lux_sat_data_real_v4_nobck"
 model_name = "u2net"  # or try "isnet-general-use"
 alpha_matting = True
-foreground_threshold = 200
-background_threshold = 100
+foreground_threshold = 10
+background_threshold = 10
 erode_size = 10  # You can try 0–10, lower = preserve thin features
 
 # Ensure output directory exists
